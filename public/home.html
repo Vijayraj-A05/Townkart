@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TownKart | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* General styles and animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeInDown {
+            0% { opacity: 0; transform: translateY(-30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideLine {
+            0% { width: 40px; background: linear-gradient(to right, #6a11cb, #2575fc); }
+            100% { width: 100px; background: linear-gradient(to right, #2575fc, #6a11cb); }
+        }
+        @keyframes slideInUp {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f6f8ff 0%, #e8eeff 100%);
+            color: #2d3436;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0; /* Initial state for scroll animation */
+            transform: translateY(20px);
+            cursor: pointer;
+        }
+        .product-card.fade-in {
+            animation: fadeInDown 0.5s ease-out forwards;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .category-item {
+            padding: 15px;
+            background: #e9f0ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .category-item:hover {
+            background: #d3e0ff;
+            transform: scale(1.02);
+        }
+        .category-item.active {
+            background: #1A73E8;
+            color: white;
+            box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+        }
+        .category-item.active span {
+            color: white;
+        }
+        #notification-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(26, 115, 232, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideInUp 0.5s ease-out forwards;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+        }
+        h2:hover {
+            color: #1A73E8;
+            transform: scale(1.05);
+            transition: 0.3s;
+        }
+        .header-scrolled {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            transition: all 0.3s ease-in-out;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #2d3436;
+            transition: transform 0.3s ease;
+        }
+        .modal-close-btn:hover {
+            transform: rotate(90deg);
+        }
+        .modal-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-item:last-child {
+            border-bottom: none;
+        }
+        .modal-item-info {
+            flex: 1;
+        }
+        .modal-item-price {
+            font-weight: 600;
+            color: #1A73E8;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .quantity-btn {
+            background: #eee;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .quantity-btn:hover {
+            background: #ddd;
+        }
+        @media (min-width: 768px) {
+            .label {
+                display: block !important;
+            }
+        }
+        @media (max-width: 480px) {
+            header {
+                padding: 10px 15px !important;
+            }
+            input::placeholder {
+                font-size: 12px;
+            }
+            button {
+                padding: 6px 10px !important;
+                font-size: 12px;
+            }
+        }
+        .product-details-modal .modal-content {
+            max-width: 700px;
+        }
+        .product-details-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .product-details-content img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .product-details-info {
+            flex: 1;
+        }
+        #profile-menu {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 15px;
+            min-width: 200px;
+            z-index: 999;
+            display: none;
+            transform-origin: top right;
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        @keyframes scaleIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #profile-menu a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #2d3436;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+        #profile-menu a:hover {
+            background: #f0f6ff;
+        }
+        
+        /* Media Queries for full responsiveness */
+        @media (max-width: 768px) {
+            /* General alignment for main content */
+            main {
+                padding: 0 10px;
+            }
+            
+            /* Stacks hero section content vertically */
+            #hero-section {
+                flex-direction: column;
+                padding: 20px;
+                text-align: center;
+            }
+            
+            #hero-section > div {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            /* Adjusts product grids for smaller screens */
+            #product-list-container {
+                padding: 10px;
+            }
+
+            #product-grid,
+            #deals-products-grid,
+            #popular-products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            
+            /* Center the main headings */
+            h2 {
+                text-align: center;
+            }
+            
+            /* Align the footer columns vertically */
+            footer > div {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            /* Adjust padding and font size for smaller viewports */
+            .modal-content, .modal-content.product-details-modal {
+                max-width: 95%;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Firebase v8 Scripts (works with firebase-config.js) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- Your Firebase Config File -->
+<script src="firebase-config.js"></script>
+    <header id="main-header" style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 15px 20px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; transition: all 0.3s ease;">
+        
+        <div style="display: flex; align-items: center; min-width: 120px;">
+            <div style="display: flex; align-items: center; font-weight: 700; font-size: clamp(18px, 4vw, 24px); color: #1A73E8;">
+                <span style="background: linear-gradient(to right, #1A73E8, #6C5CE7); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; color: white;">TK</span>
+                <span>TownKart</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: center; flex: 1; min-width: 200px; max-width: 600px; margin: 0 10px;">
+            <div style="position: relative; width: 100%;">
+                <input id="searchInput" type="text" placeholder="Search products, brands and categories..." style="padding: 12px 15px 12px 45px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; width: 100%; transition: all 0.3s ease;" onfocus="this.style.borderColor='#1A73E8'; this.style.boxShadow='0 0 0 3px rgba(26, 115, 232, 0.1)'" onblur="this.style.borderColor='#ddd'; this.style.boxShadow='none'">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #1A73E8;"></i>
+                <button id="searchBtn" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #1A73E8; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#0d47a1'" onmouseout="this.style.background='#1A73E8'">Search</button>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: clamp(10px, 3vw, 20px); min-width: 180px;">
+            <div id="wishlist-icon-container" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor:pointer;">
+                <i class="fas fa-heart" style="font-size: 22px; color: #1A73E8; transition: color 0.3s ease;" onmouseover="this.style.color='#FF6F00'" onmouseout="this.style.color='#1A73E8'"></i>
+                <span style="font-size: 12px; margin-top: 4px; color: #2d3436; display: none;" class="label">Wishlist</span>
+                <span id="wishlist-count" style="position: absolute; top: -8px; right: 5px; background: #FF6F00; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">0</span>
+            </div>
+            
+            <div id="cart-icon-container" style="position: relative; display: flex; flex-direction: column; align-items: center; cursor:pointer;">
+                <i class="fas fa-shopping-cart" style="font-size: 22px; color: #1A73E8; transition: color 0.3s ease;" onmouseover="this.style.color='#FF6F00'" onmouseout="this.style.color='#1A73E8'"></i>
+                <span style="font-size: 12px; margin-top: 4px; color: #2d3436; display: none;" class="label">Cart</span>
+                <span id="cart-count" style="position: absolute; top: -8px; right: 0; background: #1A73E8; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">0</span>
+            </div>
+            
+            <div id="profile-container" style="display: flex; flex-direction: column; align-items: center; cursor:pointer;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(to right, #1A73E8, #6C5CE7); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">JD</div>
+                <span style="font-size: 12px; margin-top: 4px; color: #2d3436; display: none;" class="label">Profile</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="profile-menu">
+        <div style="padding:12px 16px; border-bottom:1px solid #eee; display:flex; gap:10px; align-items:center;">
+            <img id="profile-photo" src="" alt="Profile" style="width:48px;height:48px;border-radius:50%;object-fit:cover;background:#f0f0f0;">
+            <div>
+                <div id="profile-name" style="font-weight:700;color:#2d3436;">Guest</div>
+                <div id="profile-email" style="font-size:12px;color:#666;">guest@townkart</div>
+            </div>
+        </div>
+                <div style="padding:10px 12px;">
+                        <div style="margin-bottom:8px;"><strong>Address:</strong>
+                                <div id="profile-address" style="font-size:13px;color:#555">Not set</div>
+                        </div>
+                        <div style="margin-bottom:8px;"><strong>Orders:</strong> <span id="orders-count">0</span></div>
+                        <button id="profile-manage" style="display:block;padding:8px 10px;border-radius:6px;background:#1A73E8;color:white;text-align:center;border:none;margin-bottom:8px;cursor:pointer;">Manage Account</button>
+                        <button id="signout-btn" style="width:100%;padding:8px;border-radius:6px;border:none;background:#FF6F00;color:white;cursor:pointer;">Sign Out</button>
+                </div>
+    </div>
+
+        <!-- Account Details Modal -->
+            <div id="account-modal" class="modal-overlay">
+            <div class="modal-content" style="background:#fff;max-width:420px;margin:60px auto;padding:24px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.12);position:relative;">
+                <button class="modal-close-btn" id="account-close" style="position:absolute;top:16px;right:16px;font-size:22px;background:none;border:none;cursor:pointer;">&times;</button>
+                <h3 style="color:#1A73E8;margin-top:0;">Account Details</h3>
+                <div style="margin-top:10px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;">Full name</label>
+                    <input id="acc-name" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;">Profile Photo URL</label>
+                    <input id="acc-photo" type="text" placeholder="https://.../avatar.jpg" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;">Phone</label>
+                    <input id="acc-phone" type="text" placeholder="+91 98765 43210" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:12px;">
+                    <label style="display:block;margin-bottom:6px;font-weight:600;">Email</label>
+                    <input id="acc-email" type="email" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:6px;">
+                    <div style="font-size:13px;color:#666;margin-bottom:12px;">Changing the Authentication email may require re-authentication.</div>
+                    <h4 style="margin:12px 0 8px 0;">Addresses</h4>
+                    <div id="addresses-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;max-height:220px;overflow:auto;padding-right:6px;"></div>
+                    <div style="display:flex;gap:8px;margin-top:6px;">
+                        <input id="new-address" type="text" placeholder="Add new address" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;">
+                        <button id="add-address-btn" style="background:#1A73E8;color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;">Add</button>
+                    </div>
+                    <h4 style="margin:12px 0 8px 0;">Orders</h4>
+                    <div id="orders-list" style="display:flex;flex-direction:column;gap:8px;max-height:160px;overflow:auto;padding-right:6px;margin-bottom:12px;color:#333;"></div>
+                    <div style="display:flex;gap:8px;margin-top:18px;">
+                        <button id="save-account-btn" class="btn btn-signup" style="flex:1;">Save Changes</button>
+                        <button id="delete-account-data" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:8px;padding:10px;cursor:pointer;">Delete All Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+                        // Inline script for Account Modal open/close
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var modal = document.getElementById('account-modal');
+                            var closeBtn = document.getElementById('account-close');
+                            var manageBtn = document.getElementById('profile-manage');
+
+                            // Manage Account button opens modal
+                            if (manageBtn) {
+                                manageBtn.onclick = function() {
+                                    modal.classList.add('visible');
+                                };
+                            }
+                            if (closeBtn) {
+                                closeBtn.onclick = function() {
+                                    modal.classList.remove('visible');
+                                };
+                            }
+                            // Optional: close modal when clicking outside modal-content
+                            modal.onclick = function(e) {
+                                if (e.target === modal) {
+                                    modal.classList.remove('visible');
+                                }
+                            };
+                        });
+        </script>
+
+    <main style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+        <div id="hero-section" style="background: linear-gradient(to right, #1A73E8, #6C5CE7); border-radius: 16px; padding: 40px; color: white; margin-bottom: 40px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; overflow: hidden; position: relative;">
+            <h1 style="margin: 0 0 15px 0; font-size: 2.5rem; text-align: center;">Summer Sale Up To 50% Off</h1>
+            <p style="margin: 0 0 25px 0; font-size: 1.1rem; opacity: 0.9; text-align: center;">Discover the latest trends and get amazing discounts on all products. Limited time offer!</p>
+            <div style="width: 100%; display: flex; flex-wrap: wrap; gap: 30px; margin-top: 30px;">
+                
+                <div style="flex: 1; min-width: 250px;">
+                    <h3 style="color: white; margin-bottom: 20px;">Shop by Category</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                        <li class="category-item active" data-category="electronics">
+                            <img src="https://img.freepik.com/free-psd/digital-device-mockup_53876-76368.jpg" alt="Electronics" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Electronics</span>
+                        </li>
+                        <li class="category-item" data-category="clothing">
+                            <img src="https://img.freepik.com/free-vector/collection-t-shirts-arranged-different-colors_1284-42189.jpg" alt="Clothing" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Clothing</span>
+                        </li>
+                        <li class="category-item" data-category="home">
+                            <img src="https://img.freepik.com/free-psd/living-room-furniture-mockup_53876-76468.jpg" alt="Home" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Home & Decor</span>
+                        </li>
+                        <li class="category-item" data-category="beauty">
+                            <img src="https://img.freepik.com/free-psd/beauty-product-mockup_53876-76342.jpg" alt="Beauty" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Beauty</span>
+                        </li>
+                        <li class="category-item" data-category="books">
+                            <img src="https://img.freepik.com/free-vector/books-stack-realistic_1284-4735.jpg" alt="Books" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Books</span>
+                        </li>
+                        <li class="category-item" data-category="toys">
+                            <img src="https://img.freepik.com/free-psd/wooden-toys-mockup_53876-76501.jpg" alt="Toys" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Toys</span>
+                        </li>
+                        <li class="category-item" data-category="sports">
+                            <img src="https://img.freepik.com/free-vector/sports-equipment-set_1284-4740.jpg" alt="Sports" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Sports</span>
+                        </li>
+                        <li class="category-item" data-category="kitchen">
+                            <img src="https://img.freepik.com/free-psd/kitchen-utensils-mockup_53876-76480.jpg" alt="Kitchen" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Kitchen</span>
+                        </li>
+                        <li class="category-item" data-category="automotive">
+                            <img src="https://img.freepik.com/free-psd/car-parts-mockup_53876-76335.jpg" alt="Automotive" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Automotive</span>
+                        </li>
+                        <li class="category-item" data-category="fashion">
+                            <img src="https://img.freepik.com/free-psd/handbag-mockup_53876-76478.jpg" alt="Fashion" style="width: 50px; height: 50px; object-fit: contain;">
+                            <span style="font-weight: 600; color: #2d3436;">Fashion</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div id="product-list-container" style="flex: 2; min-width: 300px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                    <h3 id="product-list-title" style="color: #1A73E8; margin-bottom: 20px;">Electronics Products</h3>
+                    <div id="product-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;">
+                    </div>
+                    <a href="#" style="display: block; text-align: right; margin-top: 20px; color: #1A73E8; text-decoration: none; font-weight: 600;">View All →</a>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin: 50px 0;">
+            <h2 style="text-align: center; font-size: 32px; color: #2d3436; margin-bottom: 40px; font-weight: 700; position: relative; padding-bottom: 20px; letter-spacing: 1px; animation: fadeInDown 1s ease-in-out;">
+            🔥 Deals of the Day 🛍️
+            <span style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: linear-gradient(to right, #6a11cb, #2575fc); border-radius: 3px; animation: slideLine 1.5s infinite alternate;"></span>
+            </h2>
+            <div id="deals-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px;">
+                </div>
+        </div>
+        
+        <h2 style="color: #1A73E8; margin-bottom: 25px; padding-left: 10px;">Popular Products</h2>
+        <div id="popular-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px;">
+            </div>
+    </main>
+
+    <footer style="background: #2d3436; color: white; padding: 40px 0; margin-top: 60px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+            <div>
+                <h3 style="color: #1A73E8; margin-bottom: 20px;">TownKart</h3>
+                <p style="line-height: 1.6; opacity: 0.8;">Your one-stop shop for all your needs. Quality products at affordable prices.</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px;">Quick Links</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; line-height: 2;">
+                    <li><a href="#" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Home</a></li>
+                    <li><a href="#" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Products</a></li>
+                    <li><a href="#" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">Categories</a></li>
+                    <li><a href="#" style="color: white; text-decoration: none; opacity: 0.8; transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">About Us</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px;">Contact Us</h4>
+                <p style="opacity: 0.8; margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Shopping Street, Retail City</p>
+                <p style="opacity: 0.8; margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +1 234 567 8900</p>
+                <p style="opacity: 0.8;"><i class="fas fa-envelope" style="margin-right: 10px;"></i> support@townkart.com</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 15px;">Newsletter</h4>
+                <p style="opacity: 0.8; margin-bottom: 15px;">Subscribe to get special offers and updates</p>
+                <div style="display: flex;">
+                    <input type="email" placeholder="Your email" style="padding: 12px 15px; border: none; border-radius: 6px 0 0 6px; width: 70%;">
+                    <button style="background: #1A73E8; color: white; border: none; padding: 12px 15px; border-radius: 0 6px 6px 0; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#0d47a1'" onmouseout="this.style.background='#1A73E8'">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <p style="opacity: 0.7;">&copy; 2023 TownKart. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="wishlist-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeWishlistModal()">&times;</button>
+            <h3 style="color: #1A73E8; margin-bottom: 20px;">Your Wishlist</h3>
+            <div id="wishlist-items-container">
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeCartModal()">&times;</button>
+            <h3 style="color: #1A73E8; margin-bottom: 20px;">Your Cart</h3>
+            <div id="cart-items-container">
+            </div>
+            <div id="cart-total" style="text-align: right; margin-top: 20px; font-size: 1.2rem; font-weight: bold;">
+                Total: ₹0
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button id="checkout-button" style="background: #FF6F00; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="product-details-modal" class="modal-overlay">
+        <div class="modal-content product-details-modal">
+            <button class="modal-close-btn" onclick="closeProductDetailsModal()">&times;</button>
+            <div id="product-details-content">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allProductsData = {
+            'electronics': [
+                { id: 1, name: 'Wireless Headphones', image: 'https://img.freepik.com/free-psd/wireless-headphones-mockup_53876-66263.jpg', price: 10399, specs: ['Bluetooth 5.0', 'Noise Cancellation', '20-hour battery life', 'Built-in microphone'], description: 'Experience immersive audio with these wireless headphones featuring active noise cancellation for a truly personal listening experience.' },
+                { id: 2, name: 'Smart Watch', image: 'https://img.freepik.com/free-psd/smart-watch-digital-device-mockup_53876-97665.jpg', price: 9999, specs: ['Fitness Tracking', 'Heart Rate Monitor', 'Water Resistant', '1.5-inch AMOLED Display'], description: 'A sleek and stylish smart watch that helps you stay on top of your fitness goals with a built-in heart rate monitor and water resistance.' },
+                { id: 3, name: 'Tablet', image: 'https://img.freepik.com/free-psd/digital-device-mockup_53876-76368.jpg', price: 21999, specs: ['10.1-inch FHD Display', '8GB RAM', '128GB Storage', '10-hour battery life'], description: 'A powerful and portable tablet perfect for entertainment and productivity. The vivid display and long battery life make it ideal for on-the-go use.' },
+                { id: 4, name: 'Laptop', image: 'https://img.freepik.com/free-psd/laptop-mockup-in-white_53876-76470.jpg', price: 55000, specs: ['Intel Core i5', '8GB RAM', '512GB SSD', '14-inch FHD Display'], description: 'A high-performance laptop designed for everyday tasks and creative work. Its fast processor and ample storage ensure a smooth user experience.' },
+                { id: 5, name: 'Camera', image: 'https://img.freepik.com/free-psd/camera-mockup_53876-76337.jpg', price: 32000, specs: ['24MP Sensor', '4K Video Recording', 'Interchangeable Lenses', 'Wi-Fi connectivity'], description: 'Capture stunning photos and videos with this professional-grade camera. With its high-resolution sensor and 4K capabilities, your memories will come to life.' },
+                { id: 6, name: 'Gaming Console', image: 'https://img.freepik.com/free-psd/gaming-console-mockup_53876-76361.jpg', price: 40000, specs: ['4K Ultra HD Gaming', '1TB SSD', 'Online Multiplayer', 'Customizable Controller'], description: 'Dive into the world of gaming with this next-gen console. Experience ultra-fast loading times and stunning 4K graphics.' },
+                { id: 7, name: 'Keyboard', image: 'https://img.freepik.com/free-psd/keyboard-mockup_53876-76334.jpg', price: 3500, specs: ['Mechanical Switches', 'RGB Backlighting', 'Ergonomic Design', 'Wired Connectivity'], description: 'A durable mechanical keyboard with satisfying key presses and customizable RGB lighting. Perfect for gamers and typists alike.' },
+                { id: 8, name: 'Mouse', image: 'https://img.freepik.com/free-psd/mouse-mockup_53876-76336.jpg', price: 1200, specs: ['Wireless', 'High-Precision Sensor', '6 Programmable Buttons', 'Ergonomic Shape'], description: 'A comfortable wireless mouse with a high-precision sensor for smooth and accurate tracking. Ideal for both work and gaming.' },
+                { id: 9, name: 'Printer', image: 'https://img.freepik.com/free-psd/printer-mockup_53876-76344.jpg', price: 8999, specs: ['All-in-one', 'Wireless Printing', 'High-Speed Output', 'Auto-Duplex Printing'], description: 'An efficient all-in-one printer with wireless capabilities, perfect for home or office use. Print, scan, and copy with ease.' },
+                { id: 10, name: 'Speaker', image: 'https://img.freepik.com/free-psd/speaker-mockup_53876-76352.jpg', price: 5500, specs: ['Bluetooth 5.0', 'Deep Bass', '360° Sound', '12-hour battery life'], description: 'Fill any room with rich, immersive sound with this portable Bluetooth speaker. Its long-lasting battery lets you take the party anywhere.' },
+                { id: 11, name: 'USB Drive', image: 'https://img.freepik.com/free-psd/usb-drive-mockup_53876-76353.jpg', price: 499, specs: ['64GB Storage', 'USB 3.0', 'Durable Casing', 'Plug and Play'], description: 'A reliable and fast USB 3.0 flash drive with 64GB of storage. Easily transfer files on the go.' },
+                { id: 12, name: 'External Hard Drive', image: 'https://img.freepik.com/free-psd/external-hard-drive-mockup_53876-76354.jpg', price: 4000, specs: ['1TB Storage', 'USB-C Interface', 'Compact Design', 'Password Protection'], description: 'Securely store all your important files with this 1TB external hard drive. Its compact design makes it easy to carry around.' },
+            ],
+            'clothing': [
+                { id: 13, name: 'T-Shirt', image: 'https://img.freepik.com/free-psd/t-shirt-mockup_53876-74946.jpg', price: 599, specs: ['100% Cotton', 'Regular Fit', 'Machine Washable', 'Available in multiple colors'], description: 'A classic and comfortable 100% cotton T-shirt. A must-have for your everyday wardrobe.' },
+                { id: 14, name: 'Jeans', image: 'https://img.freepik.com/free-psd/denim-jeans-mockup_53876-74892.jpg', price: 1599, specs: ['Stretch Denim', 'Slim Fit', 'Button Fly', 'Five-Pocket Styling'], description: 'Stylish slim-fit jeans made from high-quality stretch denim for maximum comfort and flexibility.' },
+                { id: 15, name: 'Jacket', image: 'https://img.freepik.com/free-psd/jacket-mockup_53876-74901.jpg', price: 2999, specs: ['Waterproof Fabric', 'Hooded Design', 'Zipper Pockets', 'Lightweight'], description: 'A versatile and lightweight hooded jacket made from waterproof fabric, perfect for all weather conditions.' },
+                { id: 16, name: 'Polo Shirt', image: 'https://img.freepik.com/free-psd/polo-shirt-mockup_53876-74902.jpg', price: 799, specs: ['Pique Knit Fabric', 'Classic Fit', 'Ribbed Collar', 'Three-button placket'], description: 'A timeless polo shirt made from soft pique knit fabric, perfect for a smart-casual look.' },
+                { id: 17, name: 'Dress Shirt', image: 'https://img.freepik.com/free-psd/dress-shirt-mockup_53876-74903.jpg', price: 1299, specs: ['100% Cotton', 'Tailored Fit', 'Spread Collar', 'Adjustable Cuffs'], description: 'A crisp, tailored dress shirt made from premium cotton. A staple for any formal occasion.' },
+                { id: 18, name: 'Sweater', image: 'https://img.freepik.com/free-psd/sweater-mockup_53876-74904.jpg', price: 1899, specs: ['Cashmere Blend', 'Crewneck', 'Ribbed Cuffs and Hem', 'Soft and warm'], description: 'A luxurious cashmere blend sweater that is soft, warm, and perfect for layering.' },
+                { id: 19, name: 'Hoodie', image: 'https://img.freepik.com/free-psd/hoodie-mockup_53876-74905.jpg', price: 1499, specs: ['Fleece Fabric', 'Drawstring Hood', 'Kangaroo Pocket', 'Relaxed Fit'], description: 'A cozy and comfortable hoodie made from soft fleece fabric, featuring a classic kangaroo pocket and drawstring hood.' },
+                { id: 20, name: 'Skirt', image: 'https://img.freepik.com/free-psd/skirt-mockup_53876-74906.jpg', price: 999, specs: ['A-line Silhouette', 'Polyester Fabric', 'Zipper Closure', 'Midi Length'], description: 'An elegant A-line midi skirt made from lightweight polyester fabric. Ideal for both office wear and casual outings.' },
+                { id: 21, name: 'Shorts', image: 'https://img.freepik.com/free-psd/shorts-mockup_53876-74907.jpg', price: 699, specs: ['Linen Blend', 'Elastic Waistband', 'Drawstring', 'Two Side Pockets'], description: 'Lightweight and breathable shorts made from a linen blend, perfect for hot weather. Features an elastic waistband for comfort.' },
+                { id: 22, name: 'Leggings', image: 'https://img.freepik.com/free-psd/leggings-mockup_53876-74908.jpg', price: 899, specs: ['High-stretch fabric', 'High-waisted', 'Moisture-wicking', 'Flatlock seams'], description: 'High-performance leggings made from moisture-wicking fabric with a high-waisted design for a secure and comfortable fit.' },
+                { id: 23, name: 'Swimsuit', image: 'https://img.freepik.com/free-psd/swimsuit-mockup_53876-74909.jpg', price: 1999, specs: ['Chlorine Resistant', 'Quick-Drying', 'Built-in Bra Support', 'UPF 50+ Protection'], description: 'A stylish and durable swimsuit made from chlorine-resistant, quick-drying fabric with built-in UPF 50+ protection.' },
+                { id: 24, name: 'Blazer', image: 'https://img.freepik.com/free-psd/blazer-mockup_53876-74910.jpg', price: 3500, specs: ['Wool Blend', 'Single-Breasted', 'Notch Lapel', 'Fully Lined'], description: 'A classic single-breasted blazer made from a high-quality wool blend, perfect for a professional or formal look.' },
+            ],
+            'home': [
+                { id: 25, name: 'Coffee Maker', image: 'https://img.freepik.com/free-psd/coffee-maker-machine-mockup_53876-76356.jpg', price: 6399, specs: ['Automatic Drip', '12-Cup Capacity', 'Keep Warm Function', 'Removable Filter Basket'], description: 'An automatic drip coffee maker with a large 12-cup capacity and a convenient keep-warm function.' },
+                { id: 26, name: 'Living Room Set', image: 'https://img.freepik.com/free-psd/living-room-furniture-mockup_53876-76468.jpg', price: 45000, specs: ['Sofa & Two Chairs', 'Solid Wood Frame', 'Velvet Upholstery', 'Includes Pillows'], description: 'A complete living room set featuring a sofa and two matching chairs with elegant velvet upholstery and a durable solid wood frame.' },
+                { id: 27, name: 'Lamp', image: 'https://img.freepik.com/free-psd/lamp-mockup_53876-76362.jpg', price: 1200, specs: ['Adjustable Arm', 'LED Bulb Included', 'Metal Finish', 'Modern Design'], description: 'A stylish and modern desk lamp with an adjustable arm and an energy-efficient LED bulb included.' },
+                { id: 28, name: 'Vase', image: 'https://img.freepik.com/free-psd/vase-mockup_53876-76465.jpg', price: 750, specs: ['Ceramic Material', 'Matte Finish', 'Minimalist Design', '10-inch height'], description: 'A beautiful ceramic vase with a minimalist design and a matte finish, perfect for holding flowers or as a standalone decor piece.' },
+                { id: 29, name: 'Candle Holder', image: 'https://img.freepik.com/free-psd/candle-holder-mockup_53876-76466.jpg', price: 450, specs: ['Glass & Metal', 'Holds Standard Taper Candle', 'Elegant Design', 'Weighted Base'], description: 'An elegant glass and metal candle holder with a weighted base to prevent tipping.' },
+                { id: 30, name: 'Rug', image: 'https://img.freepik.com/free-psd/rug-mockup_53876-76467.jpg', price: 5000, specs: ['100% Wool', 'Hand-woven', '5x8 feet', 'Vibrant Colors'], description: 'A luxurious hand-woven rug made from 100% wool with vibrant colors that will add warmth and style to any room.' },
+                { id: 31, name: 'Curtains', image: 'https://img.freepik.com/free-psd/curtains-mockup_53876-76469.jpg', price: 2500, specs: ['Blackout Fabric', 'Grommet Top', 'Set of 2 Panels', '84-inch length'], description: 'Blackout curtains with a grommet top, designed to block out light and provide privacy. Sold as a set of two panels.' },
+                { id: 32, name: 'Cushion', image: 'https://img.freepik.com/free-psd/cushion-mockup_53876-76471.jpg', price: 300, specs: ['Cotton Cover', 'Polyester Fill', '18x18 inches', 'Removable Cover'], description: 'A soft and comfortable cushion with a removable 100% cotton cover for easy cleaning.' },
+                { id: 33, name: 'Table', image: 'https://img.freepik.com/free-psd/table-mockup_53876-76473.jpg', price: 8000, specs: ['Solid Oak Top', 'Metal Legs', '48x30 inches', 'Easy Assembly'], description: 'A sturdy dining table with a solid oak top and modern metal legs. Easy to assemble and built to last.' },
+                { id: 34, name: 'Chair', image: 'https://img.freepik.com/free-psd/chair-mockup_53876-76474.jpg', price: 4500, specs: ['Ergonomic Design', 'Velvet Upholstery', 'Swivel Base', 'Height Adjustable'], description: 'An ergonomic office chair with plush velvet upholstery and a height-adjustable swivel base for maximum comfort.' },
+                { id: 35, name: 'Sofa', image: 'https://img.freepik.com/free-psd/sofa-mockup_53876-76475.jpg', price: 25000, specs: ['Three-Seater', 'Linen Fabric', 'Reversible Cushions', 'Solid Wood Legs'], description: 'A stylish and comfortable three-seater sofa made from durable linen fabric with reversible cushions and solid wood legs.' },
+                { id: 36, name: 'Bed', image: 'https://img.freepik.com/free-psd/bed-mockup_53876-76476.jpg', price: 18000, specs: ['Queen Size', 'Platform Design', 'Fabric Upholstery', 'Easy to Assemble'], description: 'A queen-size platform bed with elegant fabric upholstery, perfect for a modern bedroom. Easy to assemble and sturdy.' },
+            ],
+            'beauty': [
+                { id: 37, name: 'Moisturizer', image: 'https://img.freepik.com/free-psd/beauty-product-mockup_53876-76342.jpg', price: 899, specs: ['24-hour Hydration', 'Hyaluronic Acid', 'Non-comedogenic', 'SPF 30'], description: 'A lightweight daily moisturizer with hyaluronic acid that provides 24-hour hydration and broad-spectrum SPF 30 protection.' },
+                { id: 38, name: 'Perfume', image: 'https://img.freepik.com/free-psd/perfume-mockup_53876-76348.jpg', price: 2499, specs: ['Floral Scent', 'Long-lasting', '100ml Bottle', 'Elegant Packaging'], description: 'An enchanting floral-scented perfume that is long-lasting and comes in an elegant 100ml bottle.' },
+                { id: 39, name: 'Foundation', image: 'https://img.freepik.com/free-psd/cosmetic-mockup_53876-76350.jpg', price: 1199, specs: ['Matte Finish', 'Full Coverage', 'SPF 15', 'Oil-free formula'], description: 'A full-coverage foundation with a flawless matte finish and an oil-free formula. Perfect for all-day wear.' },
+                { id: 40, name: 'Lipstick', image: 'https://img.freepik.com/free-psd/lipstick-mockup_53876-76351.jpg', price: 600, specs: ['Matte Finish', 'Hydrating Formula', 'Highly Pigmented', 'Long-lasting'], description: 'A highly pigmented lipstick with a comfortable matte finish that provides long-lasting color without drying out your lips.' },
+                { id: 41, name: 'Eyeshadow Palette', image: 'https://img.freepik.com/free-psd/eyeshadow-palette-mockup_53876-76355.jpg', price: 1500, specs: ['12 Shades', 'Matte & Shimmer', 'Highly Blendable', 'Cruelty-free'], description: 'A versatile eyeshadow palette with 12 highly pigmented matte and shimmer shades that are easy to blend.' },
+                { id: 42, name: 'Mascara', image: 'https://img.freepik.com/free-psd/mascara-mockup_53876-76357.jpg', price: 750, specs: ['Volumizing', 'Lengthening', 'Smudge-proof', 'Water-resistant'], description: 'A volumizing and lengthening mascara that is smudge-proof and water-resistant for all-day wear.' },
+                { id: 43, name: 'Nail Polish', image: 'https://img.freepik.com/free-psd/nail-polish-mockup_53876-76358.jpg', price: 350, specs: ['Glossy Finish', 'Chip-resistant', 'Quick-drying', 'Formaldehyde-free'], description: 'A high-gloss nail polish with a chip-resistant, quick-drying formula that is also formaldehyde-free.' },
+                { id: 44, name: 'Hair Spray', image: 'https://img.freepik.com/free-psd/hair-spray-mockup_53876-76359.jpg', price: 450, specs: ['Strong Hold', 'Flexible Finish', 'Humidity Resistant', 'Non-sticky'], description: 'A strong-hold hair spray that provides a flexible finish and is resistant to humidity without feeling sticky.' },
+                { id: 45, name: 'Shampoo', image: 'https://img.freepik.com/free-psd/shampoo-mockup_53876-76360.jpg', price: 550, specs: ['Keratin Infused', 'Sulfate-free', 'Color-safe', '500ml Bottle'], description: 'A sulfate-free shampoo infused with keratin to strengthen and protect hair, making it safe for colored hair.' },
+                { id: 46, name: 'Conditioner', image: 'https://img.freepik.com/free-psd/conditioner-mockup_53876-76363.jpg', price: 550, specs: ['Moisturizing', 'Detangling', 'Sulfate-free', '500ml Bottle'], description: 'A moisturizing and detangling conditioner that is sulfate-free and perfect for all hair types.' },
+                { id: 47, name: 'Body Wash', image: 'https://img.freepik.com/free-psd/body-wash-mockup_53876-76364.jpg', price: 450, specs: ['Gentle Formula', 'pH Balanced', 'Hydrating', 'Refreshing Scent'], description: 'A gentle and hydrating body wash with a pH-balanced formula and a refreshing scent.' },
+                { id: 48, name: 'Lotion', image: 'https://img.freepik.com/free-psd/lotion-mockup_53876-76366.jpg', price: 650, specs: ['Deeply Hydrating', 'Non-greasy', 'Vitamin E', 'For all skin types'], description: 'A deeply hydrating, non-greasy lotion enriched with vitamin E, suitable for all skin types.' },
+            ],
+            'books': [
+                { id: 49, name: 'Mystery Novel', image: 'https://img.freepik.com/free-vector/books-stack-realistic_1284-4735.jpg', price: 499, specs: ['Hardcover', '400 Pages', 'Bestselling Author', 'Suspenseful Plot'], description: 'A gripping mystery novel by a bestselling author with a suspenseful plot that will keep you on the edge of your seat.' },
+                { id: 50, name: 'Self-Help Book', image: 'https://img.freepik.com/free-psd/magazine-mockup_53876-76346.jpg', price: 399, specs: ['Paperback', '250 Pages', 'Practical Advice', 'Actionable Tips'], description: 'A practical self-help book filled with actionable tips and advice to help you achieve your goals.' },
+                { id: 51, name: 'Children\'s Storybook', image: 'https://img.freepik.com/free-psd/story-book-mockup_53876-76412.jpg', price: 299, specs: ['Hardcover', 'Illustrated', 'Ages 3-6', 'Engaging Story'], description: 'An engaging and beautifully illustrated hardcover storybook for children aged 3 to 6.' },
+                { id: 52, name: 'Fantasy Novel', image: 'https://img.freepik.com/free-psd/book-mockup_53876-76356.jpg', price: 599, specs: ['Paperback', '500 Pages', 'Epic Fantasy World', 'Intricate Plot'], description: 'An epic fantasy novel with a rich and intricate world, perfect for fans of the genre.' },
+                { id: 53, name: 'Cookbook', image: 'https://img.freepik.com/free-psd/cookbook-mockup_53876-76357.jpg', price: 750, specs: ['Hardcover', '150 Recipes', 'Full-color Photos', 'Easy to follow'], description: 'A stunning hardcover cookbook with 150 easy-to-follow recipes and full-color photos for every dish.' },
+                { id: 54, name: 'Science Fiction', image: 'https://img.freepik.com/free-psd/sci-fi-book-mockup_53876-76358.jpg', price: 699, specs: ['Paperback', '350 Pages', 'Futuristic Story', 'Mind-bending concepts'], description: 'A mind-bending science fiction novel that explores futuristic concepts and technology.' },
+                { id: 55, name: 'Biography', image: 'https://img.freepik.com/free-psd/biography-book-mockup_53876-76359.jpg', price: 899, specs: ['Hardcover', '300 Pages', 'Award-winning', 'Detailed life story'], description: 'An award-winning biography that offers a detailed and insightful look into the life of a historical figure.' },
+                { id: 56, name: 'History Book', image: 'https://img.freepik.com/free-psd/history-book-mockup_53876-76360.jpg', price: 999, specs: ['Hardcover', '600 Pages', 'In-depth Research', 'Historical Analysis'], description: 'An in-depth history book filled with extensive research and insightful analysis of a major historical event.' },
+                { id: 57, name: 'Poetry', image: 'https://img.freepik.com/free-psd/poetry-book-mockup_53876-76361.jpg', price: 350, specs: ['Paperback', '150 Poems', 'Contemporary Poetry', 'Modern Themes'], description: 'A collection of contemporary poetry with modern themes and emotional depth.' },
+                { id: 58, name: 'Art Book', image: 'https://img.freepik.com/free-psd/art-book-mockup_53876-76362.jpg', price: 1500, specs: ['Hardcover', 'Full-color pages', 'Art History', 'Famous Works'], description: 'A beautifully designed art book with full-color pages showcasing famous works and art history.' },
+                { id: 59, name: 'Textbook', image: 'https://img.freepik.com/free-psd/textbook-mockup_53876-76363.jpg', price: 1800, specs: ['Hardcover', 'Educational', 'Academic Standard', 'Practice Questions'], description: 'An educational textbook that meets academic standards and includes practice questions to aid learning.' },
+                { id: 60, name: 'Travel Guide', image: 'https://img.freepik.com/free-psd/travel-guide-mockup_53876-76364.jpg', price: 450, specs: ['Paperback', 'Maps & Photos', 'Local Recommendations', 'Cultural Tips'], description: 'A comprehensive travel guide filled with local recommendations, cultural tips, and detailed maps.' },
+            ],
+            'toys': [
+                { id: 61, name: 'Lego Set', image: 'https://img.freepik.com/free-psd/wooden-toys-mockup_53876-76501.jpg', price: 1999, specs: ['300 Pieces', 'Ages 8-14', 'Building Instructions', 'Durable Plastic'], description: 'A challenging Lego set with 300 pieces and detailed building instructions, perfect for kids aged 8-14.' },
+                { id: 62, name: 'Toy Car', image: 'https://img.freepik.com/free-psd/toy-car-mockup_53876-76365.jpg', price: 799, specs: ['Die-cast Metal', 'Pull-back Action', 'Detailed Design', 'Ages 5+'], description: 'A detailed die-cast metal toy car with a fun pull-back action, suitable for kids aged 5 and up.' },
+                { id: 63, name: 'Puzzle', image: 'https://img.freepik.com/free-psd/puzzle-mockup_53876-76495.jpg', price: 599, specs: ['1000 Pieces', 'Landscape Image', 'High-quality Cardboard', 'Challenging Fun'], description: 'A challenging 1000-piece puzzle with a beautiful landscape image, made from high-quality cardboard.' },
+                { id: 64, name: 'Doll', image: 'https://img.freepik.com/free-psd/doll-mockup_53876-76496.jpg', price: 1200, specs: ['Articulated Joints', 'Changeable Outfits', 'High-quality Materials', 'Ages 3+'], description: 'A high-quality doll with articulated joints and changeable outfits, perfect for imaginative play.' },
+                { id: 65, name: 'Teddy Bear', image: 'https://img.freepik.com/free-psd/teddy-bear-mockup_53876-76497.jpg', price: 850, specs: ['Soft Plush Fabric', '12 inches tall', 'Hand-stitched Details', 'Washable'], description: 'A soft and cuddly teddy bear made from plush fabric, with hand-stitched details and is fully washable.' },
+                { id: 66, name: 'Action Figure', image: 'https://img.freepik.com/free-psd/action-figure-mockup_53876-76498.jpg', price: 950, specs: ['Poseable Joints', 'Collectible', 'Movie-accurate Detail', 'Ages 8+'], description: 'A highly-detailed, poseable action figure that is a must-have for any collector.' },
+                { id: 67, name: 'Building Blocks', image: 'https://img.freepik.com/free-psd/building-blocks-mockup_53876-76499.jpg', price: 1500, specs: ['500 Blocks', 'Wooden Material', 'Educational', 'Storage Box Included'], description: 'A set of 500 wooden building blocks that are both fun and educational, helping to develop motor skills.' },
+                { id: 68, name: 'Board Game', image: 'https://img.freepik.com/free-psd/board-game-mockup_53876-76500.jpg', price: 1100, specs: ['2-6 Players', 'Strategy Game', 'Family-friendly', 'Quick to learn'], description: 'A fun and engaging strategy board game for 2-6 players, perfect for family game night.' },
+                { id: 69, name: 'Remote Control Car', image: 'https://img.freepik.com/free-psd/remote-control-car-mockup_53876-76502.jpg', price: 2500, specs: ['High-speed', 'Rechargeable Battery', 'Full Function Control', 'Off-road Tires'], description: 'A high-speed remote control car with a rechargeable battery and off-road tires, great for outdoor fun.' },
+                { id: 70, name: 'Toy Train', image: 'https://img.freepik.com/free-psd/toy-train-mockup_53876-76504.jpg', price: 1800, specs: ['Wooden Track', 'Battery-powered Engine', 'Multiple Wagons', 'Compatible with other sets'], description: 'A classic wooden toy train set with a battery-powered engine and multiple wagons.' },
+                { id: 71, name: 'Play Doh', image: 'https://img.freepik.com/free-psd/play-doh-mockup_53876-76505.jpg', price: 300, specs: ['Non-toxic Clay', 'Multiple Colors', 'Molding Tools Included', 'Ages 2+'], description: 'A non-toxic set of colorful Play-Doh with molding tools, perfect for creative little hands.' },
+                { id: 72, name: 'Crayons', image: 'https://img.freepik.com/free-psd/crayons-mockup_53876-76506.jpg', price: 200, specs: ['24-pack', 'Non-toxic', 'Bright Colors', 'Durable'], description: 'A 24-pack of durable, non-toxic crayons with bright and vivid colors.' },
+            ],
+            'sports': [
+                { id: 73, name: 'Basketball', image: 'https://img.freepik.com/free-vector/sports-equipment-set_1284-4740.jpg', price: 1200, specs: ['Official Size & Weight', 'Durable Rubber', 'Indoor/Outdoor Use', 'Deep Channel Design'], description: 'An official size and weight basketball made from durable rubber, suitable for both indoor and outdoor play.' },
+                { id: 74, name: 'Yoga Mat', image: 'https://img.freepik.com/free-psd/yoga-mat-mockup_53876-76503.jpg', price: 850, specs: ['Non-slip Surface', '1/4 Inch Thick', 'Eco-friendly TPE Material', 'Carrying Strap Included'], description: 'A comfortable and eco-friendly yoga mat with a non-slip surface, perfect for your daily practice.' },
+                { id: 75, name: 'Dumbbells', image: 'https://img.freepik.com/free-psd/dumbbell-mockup_53876-76349.jpg', price: 2500, specs: ['Adjustable Weight', 'Rubberized Grip', 'Durable Steel', 'Compact Design'], description: 'A set of adjustable dumbbells with a rubberized grip and durable steel construction. Perfect for a home workout.' },
+                { id: 76, name: 'Running Shoes', image: 'https://img.freepik.com/free-psd/running-shoe-mockup_53876-76345.jpg', price: 3000, specs: ['Lightweight', 'Cushioned Sole', 'Breathable Mesh', 'Supportive Fit'], description: 'Lightweight running shoes with a cushioned sole and breathable mesh upper for a comfortable and supportive fit.' },
+                { id: 77, name: 'Treadmill', image: 'https://img.freepik.com/free-psd/treadmill-mockup_53876-76346.jpg', price: 25000, specs: ['Folding Design', '12 Pre-set Programs', 'Heart Rate Monitor', 'LCD Display'], description: 'A space-saving folding treadmill with 12 pre-set workout programs and a heart rate monitor for effective home cardio.' },
+                { id: 78, name: 'Cycling Helmet', image: 'https://img.freepik.com/free-psd/cycling-helmet-mockup_53876-76347.jpg', price: 1500, specs: ['Adjustable Fit', 'Aerodynamic Design', 'Ventilation System', 'Lightweight'], description: 'A lightweight and aerodynamic cycling helmet with an adjustable fit and a built-in ventilation system.' },
+                { id: 79, name: 'Soccer Ball', image: 'https://img.freepik.com/free-psd/soccer-ball-mockup_53876-76348.jpg', price: 800, specs: ['Official Size 5', 'Machine-Stitched Panels', 'Durable TPU Cover', 'Butyl Bladder'], description: 'A durable and reliable official size 5 soccer ball with machine-stitched panels and a durable TPU cover.' },
+                { id: 80, name: 'Tennis Racket', image: 'https://img.freepik.com/free-psd/tennis-racket-mockup_53876-76350.jpg', price: 2200, specs: ['Aluminum Frame', 'Lightweight', 'Large Sweet Spot', 'Vibration Dampening'], description: 'A lightweight aluminum tennis racket with a large sweet spot, perfect for beginners and intermediate players.' },
+                { id: 81, name: 'Jump Rope', image: 'https://img.freepik.com/free-psd/jump-rope-mockup_53876-76351.jpg', price: 250, specs: ['Adjustable Length', 'Comfort Grip Handles', 'Tangle-free Rope', 'High-speed Bearings'], description: 'A jump rope with adjustable length and tangle-free rope, featuring comfort grip handles and high-speed bearings.' },
+                { id: 82, name: 'Water Bottle', image: 'https://img.freepik.com/free-psd/water-bottle-mockup_53876-76352.jpg', price: 150, specs: ['BPA-free Plastic', 'Leak-proof Lid', '1-Liter Capacity', 'Ergonomic Design'], description: 'A BPA-free, leak-proof water bottle with a 1-liter capacity and an ergonomic design for easy handling.' },
+                { id: 83, name: 'Fitness Tracker', image: 'https://img.freepik.com/free-psd/fitness-tracker-mockup_53876-76353.jpg', price: 4000, specs: ['Activity Monitoring', 'Sleep Tracking', 'Long Battery Life', 'Heart Rate Sensor'], description: 'A comprehensive fitness tracker that monitors your activity, tracks sleep patterns, and has a long-lasting battery.' },
+                { id: 84, name: 'Gym Bag', image: 'https://img.freepik.com/free-psd/gym-bag-mockup_53876-76354.jpg', price: 1800, specs: ['Large Capacity', 'Separate Shoe Compartment', 'Durable Material', 'Adjustable Shoulder Strap'], description: 'A spacious and durable gym bag with a separate compartment for your shoes and an adjustable shoulder strap.' },
+            ],
+            'kitchen': [
+                { id: 85, name: 'Blender', image: 'https://img.freepik.com/free-psd/kitchen-utensils-mockup_53876-76480.jpg', price: 3500, specs: ['500W Motor', 'Glass Pitcher', 'Multiple Speeds', 'Crushes Ice'], description: 'A powerful blender with a 500W motor and a durable glass pitcher, capable of crushing ice and blending at multiple speeds.' },
+                { id: 86, name: 'Toaster', image: 'https://img.freepik.com/free-psd/toaster-mockup_53876-76332.jpg', price: 1800, specs: ['2-Slice Capacity', '7 Browning Levels', 'Defrost Function', 'Removable Crumb Tray'], description: 'A compact 2-slice toaster with 7 browning levels and a convenient defrost function.' },
+                { id: 87, name: 'Frying Pan', image: 'https://img.freepik.com/free-psd/frying-pan-mockup_53876-76341.jpg', price: 950, specs: ['Non-stick Coating', 'Dishwasher Safe', 'Heat-resistant Handle', '10-inch Diameter'], description: 'A durable 10-inch frying pan with a non-stick coating and a heat-resistant handle, safe for the dishwasher.' },
+                { id: 88, name: 'Coffee Grinder', image: 'https://img.freepik.com/free-psd/coffee-grinder-mockup_53876-76333.jpg', price: 1500, specs: ['Adjustable Grind Size', 'Stainless Steel Blades', 'Compact Design', 'Easy to Clean'], description: 'A compact coffee grinder with adjustable grind size and durable stainless steel blades.' },
+                { id: 89, name: 'Knife Set', image: 'https://img.freepik.com/free-psd/knife-set-mockup_53876-76334.jpg', price: 2500, specs: ['6-Piece Set', 'Stainless Steel Blades', 'Ergonomic Handles', 'Block Included'], description: 'A 6-piece knife set with razor-sharp stainless steel blades and ergonomic handles, includes a storage block.' },
+                { id: 90, name: 'Cutting Board', image: 'https://img.freepik.com/free-psd/cutting-board-mockup_53876-76335.jpg', price: 400, specs: ['Bamboo Material', 'Reversible', 'Juice Groove', 'Easy to Clean'], description: 'A durable and reversible bamboo cutting board with a juice groove to prevent messes.' },
+                { id: 91, name: 'Mixing Bowl Set', image: 'https://img.freepik.com/free-psd/mixing-bowl-set-mockup_53876-76336.jpg', price: 700, specs: ['5-Piece Set', 'Stainless Steel', 'Non-slip Base', 'Stackable'], description: 'A 5-piece mixing bowl set made from stainless steel with a non-slip base for stability and a stackable design for easy storage.' },
+                { id: 92, name: 'Measuring Cups', image: 'https://img.freepik.com/free-psd/measuring-cups-mockup_53876-76337.jpg', price: 300, specs: ['6-Piece Set', 'Stainless Steel', 'Engraved Measurements', 'Dishwasher Safe'], description: 'A 6-piece set of stainless steel measuring cups with engraved measurements that are dishwasher safe.' },
+                { id: 93, name: 'Spatula', image: 'https://img.freepik.com/free-psd/spatula-mockup_53876-76338.jpg', price: 150, specs: ['Silicone Head', 'Heat Resistant', 'Ergonomic Handle', 'Dishwasher Safe'], description: 'A heat-resistant silicone spatula with an ergonomic handle, perfect for cooking and baking.' },
+                { id: 94, name: 'Whisk', image: 'https://img.freepik.com/free-psd/whisk-mockup_53876-76339.jpg', price: 100, specs: ['Stainless Steel', 'Balloon Shape', 'Comfort Grip', 'Dishwasher Safe'], description: 'A stainless steel balloon whisk with a comfort grip handle, ideal for whipping eggs or cream.' },
+                { id: 95, name: 'Can Opener', image: 'https://img.freepik.com/free-psd/can-opener-mockup_53876-76340.jpg', price: 200, specs: ['Manual', 'Ergonomic Handle', 'Sharp Blade', 'Easy to Use'], description: 'A manual can opener with a sharp blade and an ergonomic handle, making it easy to use.' },
+                { id: 96, name: 'Bottle Opener', image: 'https://img.freepik.com/free-psd/bottle-opener-mockup_53876-76342.jpg', price: 150, specs: ['Stainless Steel', 'Wall-mounted', 'Magnetic', 'Easy Installation'], description: 'A wall-mounted stainless steel bottle opener with a magnetic cap catcher, making it a great addition to any kitchen.' },
+            ],
+            'automotive': [
+                { id: 97, name: 'Car Cover', image: 'https://img.freepik.com/free-psd/car-parts-mockup_53876-76335.jpg', price: 4500, specs: ['Waterproof', 'UV Protection', 'Fits Sedans', 'Elastic Hem'], description: 'A durable and waterproof car cover that provides protection against UV rays and dust. Fits most sedans.' },
+                { id: 98, name: 'Air Freshener', image: 'https://img.freepik.com/free-psd/air-freshener-mockup_53876-76329.jpg', price: 250, specs: ['Long-lasting Scent', 'Clip-on Design', 'Adjustable Intensity', 'New Car Scent'], description: 'A long-lasting air freshener with a clip-on design, featuring a new car scent and adjustable intensity.' },
+                { id: 99, name: 'Tire Inflator', image: 'https://img.freepik.com/free-psd/tire-inflator-mockup_53876-76340.jpg', price: 2200, specs: ['Digital Display', 'Auto Shut-off', 'Portable', '12V Power Source'], description: 'A portable tire inflator with a digital display and an auto shut-off function, powered by a 12V power source.' },
+                { id: 100, name: 'Car Wax', image: 'https://img.freepik.com/free-psd/car-wax-mockup_53876-76330.jpg', price: 500, specs: ['Carnauba Wax', 'High Gloss Finish', 'UV Protection', 'Easy Application'], description: 'A premium car wax with Carnauba wax for a high gloss finish and UV protection, easy to apply and buff.' },
+                { id: 101, name: 'Jump Starter', image: 'https://img.freepik.com/free-psd/jump-starter-mockup_53876-76331.jpg', price: 3500, specs: ['12000mAh Battery', 'LED Flashlight', 'USB Ports', 'Compact Design'], description: 'A powerful and compact jump starter with a 12000mAh battery, built-in LED flashlight, and USB ports to charge your devices.' },
+                { id: 102, name: 'Car Charger', image: 'https://img.freepik.com/free-psd/car-charger-mockup_53876-76332.jpg', price: 800, specs: ['Dual USB Ports', 'Quick Charge 3.0', 'LED Indicator', 'Compact'], description: 'A compact car charger with dual USB ports and Quick Charge 3.0 technology for fast charging.' },
+                { id: 103, name: 'Steering Wheel Cover', image: 'https://img.freepik.com/free-psd/steering-wheel-cover-mockup_53876-76333.jpg', price: 600, specs: ['Leather Material', 'Anti-slip Grip', 'Universal Fit', 'Stylish Design'], description: 'A stylish and comfortable steering wheel cover made from genuine leather, with an anti-slip grip and a universal fit.' },
+                { id: 104, name: 'Car Floor Mats', image: 'https://img.freepik.com/free-psd/car-floor-mats-mockup_53876-76334.jpg', price: 1500, specs: ['All-weather Rubber', 'Anti-slip Backing', 'Easy to Clean', 'Set of 4'], description: 'A set of 4 all-weather rubber car floor mats with an anti-slip backing, easy to clean and durable.' },
+                { id: 105, name: 'Car Seat Cover', image: 'https://img.freepik.com/free-psd/car-seat-cover-mockup_53876-76336.jpg', price: 2500, specs: ['Waterproof Fabric', 'Universal Fit', 'Easy Installation', 'Protects against spills'], description: 'A waterproof car seat cover with a universal fit, designed to protect your car seats from spills and stains.' },
+                { id: 106, name: 'Dash Cam', image: 'https://img.freepik.com/free-psd/dash-cam-mockup_53876-76337.jpg', price: 5000, specs: ['1080p Recording', 'Wide-angle Lens', 'G-Sensor', 'Loop Recording'], description: 'A high-definition dash cam with 1080p recording, a wide-angle lens, and a G-sensor for automatic incident detection.' },
+                { id: 107, name: 'Car Mount', image: 'https://img.freepik.com/free-psd/car-mount-mockup_53876-76338.jpg', price: 400, specs: ['Magnetic Mount', '360° Rotation', 'Strong Grip', 'Fits all smartphones'], description: 'A universal magnetic car mount with 360° rotation and a strong grip, fits all smartphones.' },
+                { id: 108, name: 'Car Vacuum', image: 'https://img.freepik.com/free-psd/car-vacuum-mockup_53876-76339.jpg', price: 1200, specs: ['12V Power Source', 'HEPA Filter', 'Attachments Included', 'Compact Design'], description: 'A compact and powerful car vacuum powered by a 12V source, includes various attachments for a thorough clean.' },
+            ],
+            'fashion': [
+                { id: 109, name: 'Handbag', image: 'https://img.freepik.com/free-psd/handbag-mockup_53876-76478.jpg', price: 3200, specs: ['Faux Leather', 'Multiple Compartments', 'Adjustable Strap', 'Stylish Design'], description: 'A stylish faux leather handbag with multiple compartments and an adjustable strap, perfect for daily use.' },
+                { id: 110, name: 'Sunglasses', image: 'https://img.freepik.com/free-psd/sunglasses-mockup_53876-76479.jpg', price: 1500, specs: ['UV400 Protection', 'Polarized Lenses', 'Lightweight Frame', 'Comes with Case'], description: 'Stylish sunglasses with UV400 protection and polarized lenses, comes with a protective case.' },
+                { id: 111, name: 'Wallet', image: 'https://img.freepik.com/free-psd/wallet-mockup_53876-76481.jpg', price: 800, specs: ['Genuine Leather', 'Multiple Card Slots', 'Cash Compartment', 'Compact Size'], description: 'A compact genuine leather wallet with multiple card slots and a cash compartment.' },
+                { id: 112, name: 'Belt', image: 'https://img.freepik.com/free-psd/belt-mockup_53876-76482.jpg', price: 600, specs: ['Genuine Leather', 'Adjustable Size', 'Metal Buckle', 'Classic Design'], description: 'A classic genuine leather belt with an adjustable size and a durable metal buckle.' },
+                { id: 113, name: 'Scarf', image: 'https://img.freepik.com/free-psd/scarf-mockup_53876-76483.jpg', price: 700, specs: ['Soft Wool', 'Solid Color', 'Tassel Ends', 'Lightweight'], description: 'A soft and lightweight wool scarf with tassel ends, perfect for adding a touch of style to any outfit.' },
+                { id: 114, name: 'Tie', image: 'https://img.freepik.com/free-psd/tie-mockup_53876-76484.jpg', price: 500, specs: ['Silk Material', 'Classic Design', 'Solid Color', 'Handmade'], description: 'A classic solid-color tie made from high-quality silk, perfect for formal occasions.' },
+                { id: 115, name: 'Cap', image: 'https://img.freepik.com/free-psd/cap-mockup_53876-76485.jpg', price: 400, specs: ['100% Cotton', 'Adjustable Strap', 'Embroidered Logo', 'Curved Visor'], description: 'A comfortable cotton cap with an adjustable strap and an embroidered logo.' },
+                { id: 116, name: 'Hat', image: 'https://img.freepik.com/free-psd/hat-mockup_53876-76486.jpg', price: 500, specs: ['Straw Material', 'Wide Brim', 'Ribbon Detail', 'Lightweight'], description: 'A lightweight straw hat with a wide brim and a ribbon detail, perfect for sunny days.' },
+                { id: 117, name: 'Gloves', image: 'https://img.freepik.com/free-psd/gloves-mockup_53876-76487.jpg', price: 300, specs: ['Soft Wool', 'Touchscreen Compatible', 'Ribbed Cuffs', 'One Size Fits All'], description: 'Soft wool gloves that are touchscreen compatible and have ribbed cuffs for a secure fit.' },
+                { id: 118, name: 'Watch', image: 'https://img.freepik.com/free-psd/watch-mockup_53876-76488.jpg', price: 2000, specs: ['Analog Display', 'Leather Strap', 'Stainless Steel Case', 'Water Resistant'], description: 'A classic analog watch with a genuine leather strap and a durable stainless steel case.' },
+                { id: 119, name: 'Bracelet', image: 'https://img.freepik.com/free-psd/bracelet-mockup_53876-76489.jpg', price: 1200, specs: ['Sterling Silver', 'Adjustable Length', 'Minimalist Design', 'Engravable'], description: 'A minimalist sterling silver bracelet with an adjustable length, perfect for everyday wear.' },
+                { id: 120, name: 'Necklace', image: 'https://img.freepik.com/free-psd/necklace-mockup_53876-76490.jpg', price: 1800, specs: ['Gold Plated', 'Delicate Chain', 'Pendant Included', 'Adjustable Clasp'], description: 'A delicate gold-plated necklace with a beautiful pendant and an adjustable clasp.' },
+            ],
+        };
+
+        const dealsProducts = [
+            { id: 2, name: 'Smart Watch', image: 'https://img.freepik.com/free-psd/smart-watch-digital-device-mockup_53876-97665.jpg', price: 9999, originalPrice: 13332, discount: '25% OFF', specs: ['Fitness Tracking', 'Heart Rate Monitor', 'Water Resistant', '1.5-inch AMOLED Display'], description: 'A sleek and stylish smart watch that helps you stay on top of your fitness goals with a built-in heart rate monitor and water resistance.' },
+            { id: 76, name: 'Running Shoes', image: 'https://img.freepik.com/free-psd/running-shoe-mockup_53876-76345.jpg', price: 5499, originalPrice: 7856, discount: '30% OFF', specs: ['Lightweight', 'Cushioned Sole', 'Breathable Mesh', 'Supportive Fit'], description: 'Lightweight running shoes with a cushioned sole and breathable mesh upper for a comfortable and supportive fit.' },
+            { id: 25, name: 'Coffee Maker', image: 'https://img.freepik.com/free-psd/coffee-maker-machine-mockup_53876-76356.jpg', price: 6399, originalPrice: 7999, discount: '20% OFF', specs: ['Automatic Drip', '12-Cup Capacity', 'Keep Warm Function', 'Removable Filter Basket'], description: 'An automatic drip coffee maker with a large 12-cup capacity and a convenient keep-warm function.' },
+            { id: 19, name: 'Hoodie', image: 'https://img.freepik.com/free-psd/hoodie-mockup_53876-74905.jpg', price: 3999, originalPrice: 4705, discount: '15% OFF', specs: ['Fleece Fabric', 'Drawstring Hood', 'Kangaroo Pocket', 'Relaxed Fit'], description: 'A cozy and comfortable hoodie made from soft fleece fabric, featuring a classic kangaroo pocket and drawstring hood.' },
+            { id: 5, name: 'Camera', image: 'https://img.freepik.com/free-psd/camera-mockup_53876-76337.jpg', price: 28800, originalPrice: 32000, discount: '10% OFF', specs: ['24MP Sensor', '4K Video Recording', 'Interchangeable Lenses', 'Wi-Fi connectivity'], description: 'Capture stunning photos and videos with this professional-grade camera. With its high-resolution sensor and 4K capabilities, your memories will come to life.' },
+            { id: 4, name: 'Laptop', image: 'https://img.freepik.com/free-psd/laptop-mockup-in-white_53876-76470.jpg', price: 49500, originalPrice: 55000, discount: '10% OFF', specs: ['Intel Core i5', '8GB RAM', '512GB SSD', '14-inch FHD Display'], description: 'A high-performance laptop designed for everyday tasks and creative work. Its fast processor and ample storage ensure a smooth user experience.' },
+            { id: 110, name: 'Sunglasses', image: 'https://img.freepik.com/free-psd/sunglasses-mockup_53876-76479.jpg', price: 1275, originalPrice: 1500, discount: '15% OFF', specs: ['UV400 Protection', 'Polarized Lenses', 'Lightweight Frame', 'Comes with Case'], description: 'Stylish sunglasses with UV400 protection and polarized lenses, comes with a protective case.' },
+            { id: 109, name: 'Handbag', image: 'https://img.freepik.com/free-psd/handbag-mockup_53876-76478.jpg', price: 2720, originalPrice: 3200, discount: '15% OFF', specs: ['Faux Leather', 'Multiple Compartments', 'Adjustable Strap', 'Stylish Design'], description: 'A stylish faux leather handbag with multiple compartments and an adjustable strap, perfect for daily use.' },
+            { id: 42, name: 'Mascara', image: 'https://img.freepik.com/free-psd/mascara-mockup_53876-76357.jpg', price: 600, originalPrice: 750, discount: '20% OFF', specs: ['Volumizing', 'Lengthening', 'Smudge-proof', 'Water-resistant'], description: 'A volumizing and lengthening mascara that is smudge-proof and water-resistant for all-day wear.' },
+            { id: 85, name: 'Blender', image: 'https://img.freepik.com/free-psd/kitchen-utensils-mockup_53876-76480.jpg', price: 2800, originalPrice: 3500, discount: '20% OFF', specs: ['500W Motor', 'Glass Pitcher', 'Multiple Speeds', 'Crushes Ice'], description: 'A powerful blender with a 500W motor and a durable glass pitcher, capable of crushing ice and blending at multiple speeds.' },
+            { id: 97, name: 'Car Cover', image: 'https://img.freepik.com/free-psd/car-parts-mockup_53876-76335.jpg', price: 3825, originalPrice: 4500, discount: '15% OFF', specs: ['Waterproof', 'UV Protection', 'Fits Sedans', 'Elastic Hem'], description: 'A durable and waterproof car cover that provides protection against UV rays and dust. Fits most sedans.' },
+            { id: 50, name: 'Self-Help Book', image: 'https://img.freepik.com/free-psd/magazine-mockup_53876-76346.jpg', price: 319, originalPrice: 399, discount: '20% OFF', specs: ['Paperback', '250 Pages', 'Practical Advice', 'Actionable Tips'], description: 'A practical self-help book filled with actionable tips and advice to help you achieve your goals.' },
+            { id: 1, name: 'Wireless Headphones', image: 'https://img.freepik.com/free-psd/wireless-headphones-mockup_53876-66263.jpg', price: 8319, originalPrice: 10399, discount: '20% OFF', specs: ['Bluetooth 5.0', 'Noise Cancellation', '20-hour battery life', 'Built-in microphone'], description: 'Experience immersive audio with these wireless headphones featuring active noise cancellation for a truly personal listening experience.' },
+            { id: 3, name: 'Tablet', image: 'https://img.freepik.com/free-psd/digital-device-mockup_53876-76368.jpg', price: 17599, originalPrice: 21999, discount: '20% OFF', specs: ['10.1-inch FHD Display', '8GB RAM', '128GB Storage', '10-hour battery life'], description: 'A powerful and portable tablet perfect for entertainment and productivity. The vivid display and long battery life make it ideal for on-the-go use.' },
+        ];
+
+        const popularProducts = [
+            { id: 1, name: 'Wireless Headphones', image: 'https://img.freepik.com/free-psd/wireless-headphones-mockup_53876-66263.jpg', price: 10399, specs: ['Bluetooth 5.0', 'Noise Cancellation', '20-hour battery life', 'Built-in microphone'], description: 'Experience immersive audio with these wireless headphones featuring active noise cancellation for a truly personal listening experience.' },
+            { id: 2, name: 'Smart Watch', image: 'https://cdn.pixabay.com/photo/2015/06/25/17/21/smart-watch-821557_1280.jpg', price: 15999, specs: ['Fitness Tracking', 'Heart Rate Monitor', 'Water Resistant', '1.5-inch AMOLED Display'], description: 'A sleek and stylish smart watch that helps you stay on top of your fitness goals with a built-in heart rate monitor and water resistance.' },
+            { id: 76, name: 'Running Shoes', image: 'https://cdn.pixabay.com/photo/2016/11/19/18/06/feet-1840619_1280.jpg', price: 6999, specs: ['Lightweight', 'Cushioned Sole', 'Breathable Mesh', 'Supportive Fit'], description: 'Lightweight running shoes with a cushioned sole and breathable mesh upper for a comfortable and supportive fit.' },
+            { id: 25, name: 'Coffee Maker', image: 'https://img.freepik.com/free-photo/modern-coffee-machine-counter_23-2148355637.jpg', price: 11999, specs: ['Automatic Drip', '12-Cup Capacity', 'Keep Warm Function', 'Removable Filter Basket'], description: 'An automatic drip coffee maker with a large 12-cup capacity and a convenient keep-warm function.' },
+            { id: 6, name: 'Gaming Console', image: 'https://img.freepik.com/free-psd/gaming-console-mockup_53876-76361.jpg', price: 40000, specs: ['4K Ultra HD Gaming', '1TB SSD', 'Online Multiplayer', 'Customizable Controller'], description: 'Dive into the world of gaming with this next-gen console. Experience ultra-fast loading times and stunning 4K graphics.' },
+            { id: 4, name: 'Laptop', image: 'https://img.freepik.com/free-psd/laptop-mockup-in-white_53876-76470.jpg', price: 55000, specs: ['Intel Core i5', '8GB RAM', '512GB SSD', '14-inch FHD Display'], description: 'A high-performance laptop designed for everyday tasks and creative work. Its fast processor and ample storage ensure a smooth user experience.' },
+            { id: 13, name: 'T-Shirt', image: 'https://img.freepik.com/free-psd/t-shirt-mockup_53876-74946.jpg', price: 599, specs: ['100% Cotton', 'Regular Fit', 'Machine Washable', 'Available in multiple colors'], description: 'A classic and comfortable 100% cotton T-shirt. A must-have for your everyday wardrobe.' },
+            { id: 37, name: 'Moisturizer', image: 'https://img.freepik.com/free-psd/beauty-product-mockup_53876-76342.jpg', price: 899, specs: ['24-hour Hydration', 'Hyaluronic Acid', 'Non-comedogenic', 'SPF 30'], description: 'A lightweight daily moisturizer with hyaluronic acid that provides 24-hour hydration and broad-spectrum SPF 30 protection.' },
+            { id: 49, name: 'Mystery Novel', image: 'https://img.freepik.com/free-vector/books-stack-realistic_1284-4735.jpg', price: 499, specs: ['Hardcover', '400 Pages', 'Bestselling Author', 'Suspenseful Plot'], description: 'A gripping mystery novel by a bestselling author with a suspenseful plot that will keep you on the edge of your seat.' },
+            { id: 61, name: 'Lego Set', image: 'https://img.freepik.com/free-psd/wooden-toys-mockup_53876-76501.jpg', price: 1999, specs: ['300 Pieces', 'Ages 8-14', 'Building Instructions', 'Durable Plastic'], description: 'A challenging Lego set with 300 pieces and detailed building instructions, perfect for kids aged 8-14.' },
+            { id: 79, name: 'Soccer Ball', image: 'https://img.freepik.com/free-psd/soccer-ball-mockup_53876-76348.jpg', price: 800, specs: ['Official Size 5', 'Machine-Stitched Panels', 'Durable TPU Cover', 'Butyl Bladder'], description: 'A durable and reliable official size 5 soccer ball with machine-stitched panels and a durable TPU cover.' },
+            { id: 89, name: 'Knife Set', image: 'https://img.freepik.com/free-psd/knife-set-mockup_53876-76334.jpg', price: 2500, specs: ['6-Piece Set', 'Stainless Steel Blades', 'Ergonomic Handles', 'Block Included'], description: 'A 6-piece knife set with razor-sharp stainless steel blades and ergonomic handles, includes a storage block.' },
+            { id: 104, name: 'Car Floor Mats', image: 'https://img.freepik.com/free-psd/car-floor-mats-mockup_53876-76334.jpg', price: 1500, specs: ['All-weather Rubber', 'Anti-slip Backing', 'Easy to Clean', 'Set of 4'], description: 'A set of 4 all-weather rubber car floor mats with an anti-slip backing, easy to clean and durable.' },
+        ];
+        
+        let cartItems = [];
+        let wishlistItems = [];
+
+        function findProductById(id) {
+            const allProducts = [...dealsProducts, ...popularProducts, ...allProductsData.electronics, ...allProductsData.clothing, ...allProductsData.home, ...allProductsData.beauty, ...allProductsData.books, ...allProductsData.toys, ...allProductsData.sports, ...allProductsData.kitchen, ...allProductsData.automotive, ...allProductsData.fashion];
+            return allProducts.find(p => p.id === id) || null;
+        }
+
+        function renderProducts(category, targetElementId) {
+            const productGrid = document.getElementById(targetElementId);
+            const products = allProductsData[category] || [];
+            const productListTitle = document.getElementById('product-list-title');
+            
+            if (targetElementId === 'product-grid') {
+                productListTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1) + ' Products';
+            }
+
+            productGrid.innerHTML = '';
+            products.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `
+                    padding: 10px; 
+                    text-align: center;
+                    animation-delay: ${index * 0.1}s;
+                `;
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" style="height: 100px; object-fit: contain; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #2d3436;">${product.name}</h4>
+                    <span style="font-weight: 600; color: #1A73E8; font-size: 16px; margin-top: 5px; display: block;">₹${product.price.toLocaleString('en-IN')}</span>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Buy Now</button>
+                        <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Add to Wishlist</button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+            
+            setTimeout(() => {
+                document.querySelectorAll(`#${targetElementId} .product-card`).forEach(card => card.classList.add('fade-in'));
+            }, 100);
+
+            addGlobalEventListeners();
+        }
+
+        // Build a flattened list of all products (categories + deals + popular)
+        function buildAllProducts() {
+            const cats = Object.values(allProductsData).flatMap(arr => arr.map(p => ({...p}))); 
+            const deals = dealsProducts.map(p => ({...p}));
+            const popular = popularProducts.map(p => ({...p}));
+            // Use a Map to avoid duplicate IDs (prefer category items, then deals/popular)
+            const map = new Map();
+            cats.forEach(p => map.set(p.id, p));
+            deals.forEach(p => { if (!map.has(p.id)) map.set(p.id, p); else Object.assign(map.get(p.id), p); });
+            popular.forEach(p => { if (!map.has(p.id)) map.set(p.id, p); else Object.assign(map.get(p.id), p); });
+            return Array.from(map.values());
+        }
+
+        // Render arbitrary product list into target grid (same layout as renderProducts)
+        function renderSearchResults(products, targetElementId='product-grid') {
+            const productGrid = document.getElementById(targetElementId);
+            const productListTitle = document.getElementById('product-list-title');
+            productListTitle.textContent = `Search Results (${products.length})`;
+            productGrid.innerHTML = '';
+            if (!products || products.length === 0) {
+                productGrid.innerHTML = '<div style="padding:20px;color:#666;text-align:center;">No products found.</div>';
+                return;
+            }
+            products.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `padding: 10px; text-align: center; animation-delay: ${index * 0.03}s;`;
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" style="height: 100px; object-fit: contain; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #2d3436;">${product.name}</h4>
+                    <span style="font-weight: 600; color: #1A73E8; font-size: 16px; margin-top: 5px; display: block;">₹${(product.price||0).toLocaleString('en-IN')}</span>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                        <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Buy Now</button>
+                        <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Add to Wishlist</button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+            setTimeout(() => {
+                document.querySelectorAll(`#${targetElementId} .product-card`).forEach(card => card.classList.add('fade-in'));
+            }, 80);
+            addGlobalEventListeners();
+        }
+        
+        function renderDealsProducts() {
+            const productGrid = document.getElementById('deals-products-grid');
+            productGrid.innerHTML = '';
+            dealsProducts.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `
+                    text-align: center; 
+                    padding: 20px; 
+                    position: relative;
+                    animation-delay: ${index * 0.1}s;
+                `;
+                productCard.innerHTML = `
+                    <div style="position: absolute; top: 15px; right: 15px; background: #ff7675; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">${product.discount}</div>
+                    <img src="${product.image}" alt="${product.name}" style="height: 120px; object-fit: contain; margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 10px 0; color: #2d3436;">${product.name}</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${product.description.split('.')[0]}.</p>
+                    <div style="margin-top: 10px;">
+                        <span style="font-weight: bold; color: #2d3436; font-size: 18px;">₹${product.price.toLocaleString('en-IN')}</span>
+                        <span style="text-decoration: line-through; color: #999; margin-left: 8px; font-size: 14px;">₹${product.originalPrice.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                        <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Buy Now</button>
+                        <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#d4d4d4'" onmouseout="this.style.background='#e6e6e6'">Add to Wishlist</button>
+                    </div>
+                `;
+                dealsGrid.appendChild(productCard);
+            });
+            setTimeout(() => {
+                document.querySelectorAll(`#deals-products-grid .product-card`).forEach(card => card.classList.add('fade-in'));
+            }, 100);
+            addGlobalEventListeners();
+        }
+        
+        function renderPopularProducts() {
+            const productGrid = document.getElementById('popular-products-grid');
+            productGrid.innerHTML = '';
+            popularProducts.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `
+                    text-align: center; 
+                    padding: 20px; 
+                    animation-delay: ${index * 0.1}s;
+                `;
+                productCard.innerHTML = `
+                    <div style="height: 200px; background: #f6f8ff; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                        <img src="${product.image}" alt="${product.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div style="padding: 20px;">
+                        <h3 style="margin: 0 0 10px 0; color: #2d3436;">${product.name}</h3>
+                        <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${product.description.split('.')[0]}.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <span style="font-weight: 600; color: #1A73E8; font-size: 18px;">₹${product.price.toLocaleString('en-IN')}</span>
+                            <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#e55e00'" onmouseout="this.style.background='#FF6F00'">Buy Now</button>
+                            <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#d4d4d4'" onmouseout="this.style.background='#e6e6e6'">Add to Wishlist</button>
+                        </div>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+            setTimeout(() => {
+                document.querySelectorAll(`#popular-products-grid .product-card`).forEach(card => card.classList.add('fade-in'));
+            }, 100);
+            addGlobalEventListeners();
+        }
+        
+        function updateCartTotal() {
+            const cartTotalElement = document.getElementById('cart-total');
+            let total = 0;
+            cartItems.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            cartTotalElement.textContent = `Total: ₹${total.toLocaleString('en-IN')}`;
+        }
+
+        function renderCartItems() {
+            const cartContainer = document.getElementById('cart-items-container');
+            cartContainer.innerHTML = '';
+            if (cartItems.length === 0) {
+                cartContainer.innerHTML = '<p style="text-align: center; color: #666;">Your cart is empty.</p>';
+            } else {
+                cartItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'modal-item';
+                    itemDiv.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: contain;">
+                        <div class="modal-item-info">
+                            <h4 style="margin: 0;">${item.name}</h4>
+                            <span class="modal-item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" data-id="${item.id}" data-action="decrement">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" data-id="${item.id}" data-action="increment">+</button>
+                        </div>
+                    `;
+                    cartContainer.appendChild(itemDiv);
+                });
+                updateCartTotal();
+                addCartEventListeners();
+            }
+        }
+
+        function addCartEventListeners() {
+            document.querySelectorAll('#cart-items-container .quantity-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                    const action = e.currentTarget.getAttribute('data-action');
+                    const item = cartItems.find(p => p.id === id);
+
+                    if (item) {
+                        if (action === 'increment') {
+                            item.quantity += 1;
+                        } else if (action === 'decrement') {
+                            item.quantity -= 1;
+                            if (item.quantity <= 0) {
+                                cartItems = cartItems.filter(p => p.id !== id);
+                            }
+                        }
+                    }
+                    updateCartCount();
+                    renderCartItems();
+                });
+            });
+        }
+
+        function renderWishlistItems() {
+            const wishlistContainer = document.getElementById('wishlist-items-container');
+            wishlistContainer.innerHTML = '';
+            if (wishlistItems.length === 0) {
+                wishlistContainer.innerHTML = '<p style="text-align: center; color: #666;">Your wishlist is empty.</p>';
+            } else {
+                wishlistItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'modal-item';
+                    itemDiv.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: contain;">
+                        <div class="modal-item-info">
+                            <h4 style="margin: 0;">${item.name}</h4>
+                            <span class="modal-item-price">₹${item.price.toLocaleString('en-IN')}</span>
+                        </div>
+                    `;
+                    wishlistContainer.appendChild(itemDiv);
+                });
+            }
+        }
+
+        function updateCartCount() {
+            const cartCountElement = document.getElementById('cart-count');
+            const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountElement.textContent = count;
+        }
+
+        function updateWishlistCount() {
+            const wishlistCountElement = document.getElementById('wishlist-count');
+            wishlistCountElement.textContent = wishlistItems.length;
+        }
+
+        function handleBuyNowClick(productId) {
+            const product = findProductById(productId);
+            if (!product) return;
+
+            const existingCartItem = cartItems.find(item => item.id === product.id);
+            if (existingCartItem) {
+                existingCartItem.quantity += 1;
+            } else {
+                cartItems.push({ ...product, quantity: 1 });
+            }
+
+            updateCartCount();
+            showNotification(`Added to cart: ${product.name}`);
+        }
+
+        function handleWishlistClick(productId) {
+            const product = findProductById(productId);
+            if (!product) return;
+            
+            const existingWishlistItem = wishlistItems.find(item => item.id === product.id);
+            if (!existingWishlistItem) {
+                wishlistItems.push(product);
+                updateWishlistCount();
+                showNotification(`Added to wishlist: ${product.name}`);
+            }
+        }
+        
+        function handleCartBuyNowClick() {
+            if (cartItems.length > 0) {
+                showNotification('Your order has been placed successfully!');
+                cartItems = [];
+                updateCartCount();
+                closeCartModal();
+                window.location.href = 'payment.html';
+            } else {
+                showNotification('Your cart is empty!');
+            }
+        }
+
+        function showNotification(message) {
+            const notificationToast = document.createElement('div');
+            notificationToast.id = 'notification-toast';
+            notificationToast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(notificationToast);
+
+            const cartIcon = document.querySelector('.fa-shopping-cart');
+            const wishlistIcon = document.querySelector('.fa-heart');
+            
+            if (message.includes('cart')) {
+                cartIcon.style.animation = 'pulse 0.5s';
+            } else {
+                wishlistIcon.style.animation = 'pulse 0.5s';
+            }
+
+            setTimeout(() => {
+                notificationToast.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                notificationToast.style.opacity = '0';
+                notificationToast.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    notificationToast.remove();
+                    cartIcon.style.animation = '';
+                    wishlistIcon.style.animation = '';
+                }, 500);
+            }, 2000);
+        }
+        
+        function openWishlistModal() {
+            renderWishlistItems();
+            document.getElementById('wishlist-modal').classList.add('visible');
+        }
+
+        function closeWishlistModal() {
+            document.getElementById('wishlist-modal').classList.remove('visible');
+        }
+
+        function openCartModal() {
+            renderCartItems();
+            document.getElementById('cart-modal').classList.add('visible');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cart-modal').classList.remove('visible');
+        }
+
+        function openProductDetailsModal(productId) {
+            const product = findProductById(productId);
+            if (!product) return;
+
+            const detailsContainer = document.getElementById('product-details-content');
+            detailsContainer.innerHTML = `
+                <div class="product-details-content">
+                    <img src="${product.image}" alt="${product.name}" style="height: 300px;">
+                    <div class="product-details-info">
+                        <h2 style="margin-top: 0; color: #2d3436;">${product.name}</h2>
+                        <p style="font-weight: bold; font-size: 1.5rem; color: #1A73E8;">₹${product.price.toLocaleString('en-IN')}</p>
+                        <p style="line-height: 1.6; color: #666;">${product.description}</p>
+                        <h4 style="margin-top: 20px; color: #2d3436;">Specifications:</h4>
+                        <ul style="padding-left: 20px; margin: 10px 0;">
+                            ${product.specs.map(spec => `<li>${spec}</li>`).join('')}
+                        </ul>
+                        <div style="display: flex; gap: 15px; margin-top: 20px;">
+                            <button onclick="handleBuyNowClick(${product.id}); closeProductDetailsModal();" style="background: #FF6F00; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Add to Cart</button>
+                            <button onclick="handleWishlistClick(${product.id});" style="background: #e6e6e6; color: #2d3436; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Add to Wishlist</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('product-details-modal').classList.add('visible');
+        }
+
+        function closeProductDetailsModal() {
+            document.getElementById('product-details-modal').classList.remove('visible');
+        }
+
+        function addGlobalEventListeners() {
+            // Event listeners for product cards (to open details modal)
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.removeEventListener('click', handleCardClick);
+                card.addEventListener('click', handleCardClick);
+            });
+
+            // Event listeners for Buy Now buttons
+            document.querySelectorAll('.buy-now-btn').forEach(button => {
+                button.removeEventListener('click', handleBuyNowBtnClick);
+                button.addEventListener('click', handleBuyNowBtnClick);
+            });
+
+            // Event listeners for Wishlist buttons
+            document.querySelectorAll('.wishlist-btn').forEach(button => {
+                button.removeEventListener('click', handleWishlistBtnClick);
+                button.addEventListener('click', handleWishlistBtnClick);
+            });
+
+            // Event listener for the new Buy Now button in the cart modal
+            const checkoutBtn = document.getElementById('checkout-button');
+            if (checkoutBtn) {
+                checkoutBtn.removeEventListener('click', handleCartBuyNowClick);
+                checkoutBtn.addEventListener('click', handleCartBuyNowClick);
+            }
+
+            // profile menu handlers moved to a single setup in DOMContentLoaded
+        }
+
+        function handleCardClick(e) {
+            if (e.target.tagName === 'BUTTON') return;
+            const productId = parseInt(e.currentTarget.getAttribute('data-product-id'));
+            if (productId) {
+                openProductDetailsModal(productId);
+            }
+        }
+
+        function handleBuyNowBtnClick(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const productId = parseInt(e.currentTarget.getAttribute('data-product-id'));
+            handleBuyNowClick(productId);
+        }
+
+        function handleWishlistBtnClick(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            const productId = parseInt(e.currentTarget.getAttribute('data-product-id'));
+            handleWishlistClick(productId);
+        }
+        
+        function renderDealsAndPopular() {
+            const dealsGrid = document.getElementById('deals-products-grid');
+            const popularGrid = document.getElementById('popular-products-grid');
+
+            dealsGrid.innerHTML = '';
+            dealsProducts.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `
+                    text-align: center; 
+                    padding: 20px; 
+                    position: relative;
+                    animation-delay: ${index * 0.1}s;
+                `;
+                productCard.innerHTML = `
+                    <div style="position: absolute; top: 15px; right: 15px; background: #ff7675; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold;">${product.discount}</div>
+                    <img src="${product.image}" alt="${product.name}" style="height: 120px; object-fit: contain; margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 10px 0; color: #2d3436;">${product.name}</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${product.description.split('.')[0]}.</p>
+                    <div style="margin-top: 10px;">
+                        <span style="font-weight: bold; color: #2d3436; font-size: 18px;">₹${product.price.toLocaleString('en-IN')}</span>
+                        <span style="text-decoration: line-through; color: #999; margin-left: 8px; font-size: 14px;">₹${product.originalPrice.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                        <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;">Buy Now</button>
+                        <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#d4d4d4'" onmouseout="this.style.background='#e6e6e6'">Add to Wishlist</button>
+                    </div>
+                `;
+                dealsGrid.appendChild(productCard);
+            });
+            
+            popularGrid.innerHTML = '';
+            popularProducts.forEach((product, index) => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.productId = product.id;
+                productCard.style.cssText = `
+                    text-align: center; 
+                    padding: 20px; 
+                    animation-delay: ${index * 0.1}s;
+                `;
+                productCard.innerHTML = `
+                    <div style="height: 200px; background: #f6f8ff; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                        <img src="${product.image}" alt="${product.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <div style="padding: 20px;">
+                        <h3 style="margin: 0 0 10px 0; color: #2d3436;">${product.name}</h3>
+                        <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${product.description.split('.')[0]}.</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <span style="font-weight: 600; color: #1A73E8; font-size: 18px;">₹${product.price.toLocaleString('en-IN')}</span>
+                            <button class="buy-now-btn" data-product-id="${product.id}" style="background: #FF6F00; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#e55e00'" onmouseout="this.style.background='#FF6F00'">Buy Now</button>
+                            <button class="wishlist-btn" data-product-id="${product.id}" style="background: #e6e6e6; color: #2d3436; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.3s ease;" onmouseover="this.style.background='#d4d4d4'" onmouseout="this.style.background='#e6e6e6'">Add to Wishlist</button>
+                        </div>
+                    </div>
+                `;
+                popularGrid.appendChild(productCard);
+            });
+            
+            setTimeout(() => {
+                document.querySelectorAll(`#deals-products-grid .product-card, #popular-products-grid .product-card`).forEach(card => card.classList.add('fade-in'));
+            }, 100);
+            
+            addGlobalEventListeners();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                item.addEventListener('click', (event) => {
+                    categoryItems.forEach(i => i.classList.remove('active'));
+                    event.currentTarget.classList.add('active');
+                    const category = event.currentTarget.getAttribute('data-category');
+                    renderProducts(category, 'product-grid');
+                });
+            });
+            renderProducts('electronics', 'product-grid');
+            renderDealsAndPopular();
+
+            // build global product list and wire search
+            const allProducts = buildAllProducts();
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+
+            function doSearch() {
+                const q = (searchInput.value || '').trim().toLowerCase();
+                if (!q) { renderProducts('electronics', 'product-grid'); return; }
+                const results = allProducts.filter(p => (p.name||'').toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q));
+                renderSearchResults(results, 'product-grid');
+            }
+
+            if (searchInput) {
+                // live search on input
+                let t = null;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(t); t = setTimeout(doSearch, 250);
+                });
+                searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+            }
+            if (searchBtn) searchBtn.addEventListener('click', doSearch);
+            
+            document.getElementById('wishlist-icon-container').addEventListener('click', openWishlistModal);
+            document.getElementById('cart-icon-container').addEventListener('click', openCartModal);
+            
+            addGlobalEventListeners();
+
+            // --- Profile menu: single reliable setup (prevents duplicated listeners) ---
+            (function setupProfileMenu(){
+                const profileContainer = document.getElementById('profile-container');
+                const profileMenu = document.getElementById('profile-menu');
+                if (!profileContainer || !profileMenu) return;
+
+                // toggle menu on profile click, stop propagation so document click won't immediately close it
+                profileContainer.addEventListener('click', function(e){
+                    e.stopPropagation();
+                    profileMenu.style.display = profileMenu.style.display === 'block' ? 'none' : 'block';
+                });
+
+                // also stop clicks inside the menu from bubbling to document
+                profileMenu.addEventListener('click', function(e){ e.stopPropagation(); });
+
+                // close menu on any document click
+                document.addEventListener('click', function(){
+                    if (profileMenu.style.display === 'block') profileMenu.style.display = 'none';
+                });
+            })();
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            document.querySelectorAll('.product-card').forEach(card => {
+                observer.observe(card);
+            });
+            
+            const header = document.getElementById('main-header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('header-scrolled');
+                } else {
+                    header.classList.remove('header-scrolled');
+                }
+            });
+        });
+        </script>
+
+        <!-- PROFILE: load user info from Firebase and enable sign-out -->
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+            import { getAuth, onAuthStateChanged, signOut, updateProfile, updateEmail } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+            import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyBi5Yd7oqhRoo4ATEb78U3POkeJrCbDUTU",
+                authDomain: "townkart-d604a.firebaseapp.com",
+                projectId: "townkart-d604a",
+                storageBucket: "townkart-d604a.appspot.com",
+                messagingSenderId: "223214079906",
+                appId: "1:223214079906:web:9f78fdeda7a23623252cfb",
+                measurementId: "G-5P8CF04MFC"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                const nameEl = document.getElementById('profile-name');
+                const emailEl = document.getElementById('profile-email');
+                const photoEl = document.getElementById('profile-photo');
+                const addrEl = document.getElementById('profile-address');
+                const ordersEl = document.getElementById('orders-count');
+                if (!nameEl) return;
+
+                if (user) {
+                    emailEl.textContent = user.email || '';
+                    nameEl.textContent = user.displayName || 'User';
+                    if (user.photoURL) photoEl.src = user.photoURL;
+                    try {
+                        const snap = await getDoc(doc(db, 'users', user.uid));
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            if (data.photoURL && !user.photoURL) photoEl.src = data.photoURL;
+                            addrEl.textContent = data.address || 'Not set';
+                            const orders = data.orders || [];
+                            ordersEl.textContent = Array.isArray(orders) ? orders.length : (data.ordersCount || 0);
+                        }
+                    } catch (e) { console.error('profile load:', e); }
+                } else {
+                    nameEl.textContent = 'Guest';
+                    emailEl.textContent = '';
+                    photoEl.src = '';
+                    addrEl.textContent = 'Not set';
+                    ordersEl.textContent = '0';
+                }
+            });
+
+            const signoutBtn = document.getElementById('signout-btn');
+            if (signoutBtn) {
+                signoutBtn.addEventListener('click', async () => {
+                    try {
+                        await signOut(auth);
+                        window.location.href = 'auth.html';
+                    } catch (e) { console.error('signout', e); }
+                });
+            }
+      
+            // Account modal controls
+            const accountModal = document.getElementById('account-modal');
+            const manageBtn = document.getElementById('profile-manage');
+            const accountClose = document.getElementById('account-close');
+            const accName = document.getElementById('acc-name');
+            const accEmail = document.getElementById('acc-email');
+            const addressesList = document.getElementById('addresses-list');
+            const newAddressInput = document.getElementById('new-address');
+            const addAddressBtn = document.getElementById('add-address-btn');
+            const saveAccountBtn = document.getElementById('save-account-btn');
+            const deleteAccountDataBtn = document.getElementById('delete-account-data');
+
+            function openAccountModal() { accountModal.style.display = 'flex'; }
+            function closeAccountModal() { accountModal.style.display = 'none'; }
+
+            if (manageBtn) manageBtn.addEventListener('click', openAccountModal);
+            if (accountClose) accountClose.addEventListener('click', closeAccountModal);
+
+            let _currentUser = null;
+            async function renderAddresses(addresses) {
+                addressesList.innerHTML = '';
+                (addresses || []).forEach((addr, idx) => {
+                    const item = document.createElement('div');
+                    item.style.display = 'flex';
+                    item.style.gap = '8px';
+                    item.style.alignItems = 'center';
+                    item.innerHTML = `
+                        <div style="flex:1;padding:8px 10px;border:1px solid #eee;border-radius:8px;">${addr}</div>
+                        <button data-idx="${idx}" class="edit-addr" style="padding:6px 8px;border-radius:8px;border:none;background:#f0f0f0;cursor:pointer;">Edit</button>
+                        <button data-idx="${idx}" class="del-addr" style="padding:6px 8px;border-radius:8px;border:none;background:#e74c3c;color:white;cursor:pointer;">Delete</button>
+                    `;
+                    addressesList.appendChild(item);
+                });
+                // attach listeners
+                addressesList.querySelectorAll('.del-addr').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+                        if (!_currentUser) return;
+                        const snap = await getDoc(doc(db, 'users', _currentUser.uid));
+                        const data = snap.exists() ? snap.data() : {};
+                        const arr = Array.isArray(data.addresses) ? data.addresses : [];
+                        arr.splice(idx, 1);
+                        await setDoc(doc(db, 'users', _currentUser.uid), { addresses: arr }, { merge: true });
+                        await loadProfileToModal(_currentUser);
+                    });
+                });
+                addressesList.querySelectorAll('.edit-addr').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+                        const current = addressesList.children[idx].querySelector('div').textContent;
+                        const val = prompt('Edit address', current);
+                        if (val !== null) {
+                            updateAddress(idx, val);
+                        }
+                    });
+                });
+            }
+
+            async function updateAddress(idx, value) {
+                if (!_currentUser) return;
+                const snap = await getDoc(doc(db, 'users', _currentUser.uid));
+                const data = snap.exists() ? snap.data() : {};
+                const arr = Array.isArray(data.addresses) ? data.addresses : [];
+                arr[idx] = value;
+                await setDoc(doc(db, 'users', _currentUser.uid), { addresses: arr }, { merge: true });
+                await loadProfileToModal(_currentUser);
+            }
+
+            async function loadProfileToModal(user) {
+                _currentUser = user;
+                if (!user) {
+                    accName.value = '';
+                    accEmail.value = '';
+                    document.getElementById('acc-photo').value = '';
+                    document.getElementById('acc-phone').value = '';
+                    renderAddresses([]);
+                    renderOrders([]);
+                    return;
+                }
+                accName.value = user.displayName || '';
+                accEmail.value = user.email || '';
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        document.getElementById('acc-photo').value = data.photoURL || user.photoURL || '';
+                        document.getElementById('acc-phone').value = data.phone || '';
+                        renderAddresses(data.addresses || []);
+                        renderOrders(data.orders || []);
+                    } else {
+                        renderAddresses([]);
+                        renderOrders([]);
+                    }
+                } catch (e) { console.error('loadProfileToModal', e); }
+            }
+
+            function renderOrders(orders) {
+                const container = document.getElementById('orders-list');
+                container.innerHTML = '';
+                (orders || []).forEach((o, i) => {
+                    const el = document.createElement('div');
+                    el.style.padding = '8px 10px';
+                    el.style.border = '1px solid #eee';
+                    el.style.borderRadius = '8px';
+                    el.style.background = '#fafafa';
+                    el.innerHTML = `<div style="font-weight:600;">Order #${o.id || (i+1)}</div>
+                        <div style="font-size:13px;color:#555">Items: ${Array.isArray(o.items) ? o.items.length : (o.itemsCount||0)}</div>
+                        <div style="font-size:13px;color:#666">Total: ${o.total ? '₹'+o.total : '-'}</div>`;
+                    container.appendChild(el);
+                });
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = '<div style="color:#666">No orders yet.</div>';
+                }
+            }
+
+            addAddressBtn.addEventListener('click', async () => {
+                const v = newAddressInput.value.trim();
+                if (!v || !_currentUser) return;
+                const snap = await getDoc(doc(db, 'users', _currentUser.uid));
+                const data = snap.exists() ? snap.data() : {};
+                const arr = Array.isArray(data.addresses) ? data.addresses : [];
+                arr.push(v);
+                await setDoc(doc(db, 'users', _currentUser.uid), { addresses: arr }, { merge: true });
+                newAddressInput.value = '';
+                await loadProfileToModal(_currentUser);
+            });
+
+            saveAccountBtn.addEventListener('click', async () => {
+                if (!_currentUser) return alert('Not signed in');
+                const newName = accName.value.trim();
+                const newEmail = accEmail.value.trim();
+                const newPhoto = document.getElementById('acc-photo').value.trim();
+                const newPhone = document.getElementById('acc-phone').value.trim();
+                try {
+                    // update displayName/photoURL in Auth
+                    try {
+                        await updateProfile(auth.currentUser, { displayName: newName || null, photoURL: newPhoto || null });
+                    } catch (e) { console.warn('updateProfile failed', e); }
+
+                    // update email in Auth if changed (may require reauth)
+                    if (newEmail && newEmail !== auth.currentUser.email) {
+                        try {
+                            await updateEmail(auth.currentUser, newEmail);
+                        } catch (e) {
+                            console.warn('updateEmail failed (may require reauth)', e);
+                            // still save to users doc as fallback
+                        }
+                    }
+
+                    // update users doc with additional fields
+                    await setDoc(doc(db, 'users', _currentUser.uid), { name: newName, email: newEmail, photoURL: newPhoto, phone: newPhone }, { merge: true });
+                    alert('Profile updated');
+                    closeAccountModal();
+                } catch (e) { console.error('saveAccount', e); alert('Save failed: '+e.message); }
+            });
+
+            deleteAccountDataBtn.addEventListener('click', async () => {
+                if (!_currentUser) return;
+                if (!confirm('Delete all user data (addresses, orders) from Firestore? This will not delete your Auth account.')) return;
+                try {
+                    await setDoc(doc(db, 'users', _currentUser.uid), { addresses: [], orders: [] }, { merge: true });
+                    await loadProfileToModal(_currentUser);
+                    alert('User data cleared');
+                } catch (e) { console.error('deleteAccountData', e); alert('Delete failed'); }
+            });
+
+            // update modal whenever auth changes
+            onAuthStateChanged(auth, (user) => loadProfileToModal(user));
+        </script>
+    </script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", async () => {
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (!user) {
+            console.log("No user logged in");
+            return;
+        }
+
+        console.log("Logged in user:", user.uid);
+
+        // Fill auth fields
+        document.getElementById("acc-name").value = user.displayName || "";
+        document.getElementById("acc-email").value = user.email || "";
+        document.getElementById("acc-photo").value = user.photoURL || "";
+        document.getElementById("acc-phone").value = user.phoneNumber || "";
+
+        // Load Firestore record
+        const userRef = firebase.firestore().collection("users").doc(user.uid);
+        const snap = await userRef.get();
+
+        if (!snap.exists) {
+            console.log("No Firestore data found");
+            return;
+        }
+
+        const data = snap.data();
+
+        // Load Addresses
+        const addressesList = document.getElementById("addresses-list");
+        addressesList.innerHTML = "";
+        if (data.addresses && data.addresses.length > 0) {
+            data.addresses.forEach((addr, index) => {
+                const div = document.createElement("div");
+                div.style.padding = "10px";
+                div.style.border = "1px solid #ddd";
+                div.style.borderRadius = "8px";
+                div.style.background = "#fafafa";
+                div.innerHTML = `
+                    ${addr}
+                    <button onclick="deleteAddress(${index})"
+                        style="float:right;background:#e74c3c;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">
+                        Delete
+                    </button>
+                `;
+                addressesList.appendChild(div);
+            });
+        }
+
+        // Load Orders (dummy example)
+        const ordersList = document.getElementById("orders-list");
+        ordersList.innerHTML = "";
+        if (data.orders && data.orders.length > 0) {
+            data.orders.forEach((order) => {
+                const div = document.createElement("div");
+                div.style.padding = "10px";
+                div.style.border = "1px solid #ddd";
+                div.style.borderRadius = "8px";
+                div.innerHTML = `
+                    <b>Order ID:</b> ${order.id} <br>
+                    <b>Total:</b> ₹${order.total}
+                `;
+                ordersList.appendChild(div);
+            });
+        }
+    });
+});
+
+// DELETE Address
+async function deleteAddress(index) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const userRef = firebase.firestore().collection("users").doc(user.uid);
+    const snap = await userRef.get();
+    const data = snap.data();
+
+    data.addresses.splice(index, 1); // Remove address
+
+    await userRef.update({ addresses: data.addresses });
+
+    alert("Address deleted!");
+    location.reload();
+}
+</script>
+
+</body>
+</html>

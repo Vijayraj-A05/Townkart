@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TownKart | Authentication</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .input-icon {
+      position:absolute; left:15px; top:50%; transform:translateY(-50%);
+      color:#1A73E8; z-index:2;
+    }
+
+    input {
+      width:100%; padding:14px 14px 14px 45px;
+      border:1px solid #ddd; border-radius:8px;
+      font-size:14px; transition:all .2s ease;
+    }
+
+    input:focus {
+      border-color:#1A73E8;
+      box-shadow:0 0 0 3px rgba(26,115,232,0.15);
+      outline:none;
+    }
+
+    button.btn {
+      width:100%; padding:14px;
+      border:none; border-radius:8px;
+      color:white; font-size:16px; font-weight:600;
+      cursor:pointer; transition:.2s;
+    }
+
+    .btn-login { background:#1A73E8; }
+    .btn-login:hover { background:#0d47a1; }
+
+    .btn-signup { background:#FF6F00; }
+    .btn-signup:hover { background:#E65100; }
+
+    .social-btn {
+      width:45px; height:45px; border-radius:50%;
+      border:1px solid #eee; background:#fff;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+
+    .small-link { color:#1A73E8; cursor:pointer; font-size:14px; }
+  </style>
+</head>
+
+<body style="margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#f6f8ff,#e8eeff); 
+display:flex; justify-content:center; align-items:center; height:100vh; padding:20px;">
+
+  <div style="background:white; border-radius:18px; width:100%; max-width:400px; 
+  box-shadow:0 8px 25px rgba(0,0,0,0.08); overflow:hidden;">
+
+    <!-- HEADER -->
+    <div style="background:linear-gradient(to right,#1A73E8,#6C5CE7); padding:25px 0; text-align:center;">
+      <div style="background:white; margin:auto; padding:10px 20px; display:inline-flex; border-radius:12px; align-items:center;">
+        <i class="fas fa-store" style="font-size:24px; margin-right:10px; color:#1A73E8;"></i>
+        <span style="font-weight:700; font-size:24px; color:#1A73E8;">TownKart</span>
+      </div>
+      <p style="color:white; margin-top:10px;">Premium Shopping Experience</p>
+    </div>
+
+    <!-- TABS -->
+    <div style="display:flex;">
+      <div id="login-tab" onclick="showLogin()" style="flex:1; padding:15px; text-align:center; 
+      background:#1A73E8; color:white; cursor:pointer; font-weight:600;">Login</div>
+
+      <div id="signup-tab" onclick="showSignup()" style="flex:1; padding:15px; text-align:center; 
+      background:#f6f8ff; color:#1A73E8; cursor:pointer; font-weight:600;">Sign Up</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form" style="padding:30px; animation:fadeIn .4s;">
+      <h2 style="text-align:center; color:#1A73E8;">Welcome Back</h2>
+
+      <div style="margin-top:25px;">
+        <div style="position:relative; margin-bottom:20px;">
+          <i class="fas fa-envelope input-icon"></i>
+          <input id="loginEmail" type="email" placeholder="Email address">
+        </div>
+
+        <div style="position:relative; margin-bottom:15px;">
+          <i class="fas fa-lock input-icon"></i>
+          <input id="loginPass" type="password" placeholder="Password">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+          <label><input type="checkbox" style="accent-color:#1A73E8;"> Remember me</label>
+          <span class="small-link" onclick="showForgot()">Forgot?</span>
+        </div>
+
+        <button id="loginBtn" class="btn btn-login">Login</button>
+
+        <div id="forgot-section" style="display:none; margin-top:20px;">
+          <input id="forgotEmail" type="email" placeholder="Enter email to reset">
+          <button id="forgotBtn" class="btn" style="margin-top:10px; background:#888;">Send Reset Email</button>
+          <p id="forgotMsg" style="margin-top:10px; font-size:13px;"></p>
+        </div>
+
+        <div style="text-align:center; margin-top:25px;">
+          <p style="color:#555;">Or login with</p>
+          <div id="googleLoginBtn" class="social-btn"><i class="fab fa-google" style="color:#DB4437;"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signup-form" style="padding:30px; display:none; animation:fadeIn .4s;">
+      <h2 style="text-align:center; color:#1A73E8;">Create Account</h2>
+
+      <div style="margin-top:25px;">
+        <div style="position:relative; margin-bottom:18px;">
+          <i class="fas fa-user input-icon"></i>
+          <input id="signupName" type="text" placeholder="Full name">
+        </div>
+
+        <div style="position:relative; margin-bottom:18px;">
+          <i class="fas fa-envelope input-icon"></i>
+          <input id="signupEmail" type="email" placeholder="Email address">
+        </div>
+
+        <div style="position:relative; margin-bottom:18px;">
+          <i class="fas fa-lock input-icon"></i>
+          <input id="signupPass" type="password" placeholder="Password">
+        </div>
+
+        <div style="position:relative; margin-bottom:18px;">
+          <i class="fas fa-lock input-icon"></i>
+          <input id="signupConfirm" type="password" placeholder="Confirm password">
+        </div>
+
+        <label style="display:flex; margin-bottom:20px;">
+          <input id="termsCheck" type="checkbox" style="margin-right:10px; accent-color:#1A73E8;">
+          Accept Terms & Privacy Policy
+        </label>
+
+        <button id="signupBtn" class="btn btn-signup">Create Account</button>
+
+        <div style="text-align:center; margin-top:25px;">
+          <p style="color:#555;">Or sign up with</p>
+          <div id="googleSignupBtn" class="social-btn"><i class="fab fa-google" style="color:#DB4437;"></i></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB SCRIPT -->
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const loginTab = document.getElementById('login-tab');
+    const signupTab = document.getElementById('signup-tab');
+    const forgotSection = document.getElementById('forgot-section');
+
+    function showLogin() {
+      loginForm.style.display = "block";
+      signupForm.style.display = "none";
+      loginTab.style.background = "#1A73E8";
+      loginTab.style.color = "white";
+      signupTab.style.background = "#f6f8ff";
+      signupTab.style.color = "#1A73E8";
+    }
+
+    function showSignup() {
+      signupForm.style.display = "block";
+      loginForm.style.display = "none";
+      signupTab.style.background = "#1A73E8";
+      signupTab.style.color = "white";
+      loginTab.style.background = "#f6f8ff";
+      loginTab.style.color = "#1A73E8";
+    }
+
+    function showForgot() {
+      forgotSection.style.display = forgotSection.style.display == "block" ? "none" : "block";
+    }
+  </script>
+
+  <!-- FIREBASE SCRIPT -->
+  <script type="module">
+
+    /* IMPORTS (ONE VERSION ONLY — 10.7.0) */
+    import { initializeApp } 
+      from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      GoogleAuthProvider, signInWithPopup, updateProfile,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+    import {
+      getFirestore, doc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    /* FIREBASE CONFIG */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBi5Yd7oqhRoo4ATEb78U3POkeJrCbDUTU",
+      authDomain: "townkart-d604a.firebaseapp.com",
+      projectId: "townkart-d604a",
+      storageBucket: "townkart-d604a.appspot.com",
+      messagingSenderId: "223214079906",
+      appId: "1:223214079906:web:9f78fdeda7a23623252cfb",
+      measurementId: "G-5P8CF04MFC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    function gotoHome() {
+      window.location.href = "home.html";
+    }
+
+    /* SIGNUP */
+    signupBtn.onclick = async () => {
+      let name = signupName.value;
+      let email = signupEmail.value;
+      let pw = signupPass.value;
+      let cpw = signupConfirm.value;
+
+      if (!name || !email || !pw) return alert("Fill all fields");
+      if (pw !== cpw) return alert("Passwords do not match");
+
+      try {
+        let userCred = await createUserWithEmailAndPassword(auth, email, pw);
+
+        await updateProfile(userCred.user, { displayName: name });
+
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          name, email,
+          createdAt: new Date().toISOString()
+        });
+
+        alert("Signup Successful!");
+        gotoHome();
+      } catch (e) { alert(e.message); }
+    };
+
+    /* LOGIN */
+    loginBtn.onclick = async () => {
+      let email = loginEmail.value;
+      let pw = loginPass.value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pw);
+        alert("Login success!");
+        gotoHome();
+      } catch (e) { alert(e.message); }
+    };
+
+    /* GOOGLE LOGIN */
+    function googleAuth() {
+      signInWithPopup(auth, provider)
+        .then(async (result) => {
+          let user = result.user;
+
+          await setDoc(doc(db, "users", user.uid), {
+            name: user.displayName,
+            email: user.email,
+            createdAt: new Date().toISOString()
+          }, { merge: true });
+
+          alert("Google login success!");
+          gotoHome();
+        })
+        .catch(err => alert(err.message));
+    }
+
+    googleLoginBtn.onclick = googleAuth;
+    googleSignupBtn.onclick = googleAuth;
+
+    /* FORGOT PASSWORD */
+    forgotBtn.onclick = async () => {
+      let email = forgotEmail.value;
+      try {
+        await sendPasswordResetEmail(auth, email);
+        forgotMsg.style.color = "green";
+        forgotMsg.innerHTML = "Reset Email Sent!";
+      } catch (e) {
+        forgotMsg.style.color = "red";
+        forgotMsg.innerHTML = e.message;
+      }
+    };
+
+  </script>
+
+</body>
+</html>

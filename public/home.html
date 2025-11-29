@@ -225,6 +225,8 @@
             transform-origin: top right;
             animation: scaleIn 0.3s ease-out forwards;
         }
+        /* Use `.visible` to show the profile menu (consistent with modals) */
+        #profile-menu.visible { display: block; }
         @keyframes scaleIn {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -289,6 +291,11 @@
                 width: 95%;
                 padding: 20px;
             }
+
+            /* Ensure header elements stack nicely on small screens */
+            header { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+            header > div { width: 100%; }
+            #profile-menu { right: 10px; top: 70px; }
         }
     </style>
 </head>
@@ -506,7 +513,7 @@
             <div>
                 <h4 style="margin-bottom: 15px;">Contact Us</h4>
                 <p style="opacity: 0.8; margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Shopping Street, Retail City</p>
-                <p style="opacity: 0.8; margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +1 234 567 8900</p>
+                <p style="opacity: 0.8; margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +91 9998887776</p>
                 <p style="opacity: 0.8;"><i class="fas fa-envelope" style="margin-right: 10px;"></i> support@townkart.com</p>
             </div>
             <div>
@@ -519,7 +526,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <p style="opacity: 0.7;">&copy; 2023 TownKart. All rights reserved.</p>
+            <p style="opacity: 0.7;">&copy; 2025 TownKart. All rights reserved.</p>
         </div>
     </footer>
 
@@ -1264,7 +1271,7 @@
                 // toggle menu on profile click, stop propagation so document click won't immediately close it
                 profileContainer.addEventListener('click', function(e){
                     e.stopPropagation();
-                    profileMenu.style.display = profileMenu.style.display === 'block' ? 'none' : 'block';
+                    profileMenu.classList.toggle('visible');
                 });
 
                 // also stop clicks inside the menu from bubbling to document
@@ -1272,7 +1279,7 @@
 
                 // close menu on any document click
                 document.addEventListener('click', function(){
-                    if (profileMenu.style.display === 'block') profileMenu.style.display = 'none';
+                    profileMenu.classList.remove('visible');
                 });
             })();
 
@@ -1373,8 +1380,8 @@
             const saveAccountBtn = document.getElementById('save-account-btn');
             const deleteAccountDataBtn = document.getElementById('delete-account-data');
 
-            function openAccountModal() { accountModal.style.display = 'flex'; }
-            function closeAccountModal() { accountModal.style.display = 'none'; }
+            function openAccountModal() { accountModal.classList.add('visible'); }
+            function closeAccountModal() { accountModal.classList.remove('visible'); }
 
             if (manageBtn) manageBtn.addEventListener('click', openAccountModal);
             if (accountClose) accountClose.addEventListener('click', closeAccountModal);
